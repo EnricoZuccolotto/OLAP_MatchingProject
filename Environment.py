@@ -84,7 +84,7 @@ class Environment():
         total = 0
         # item[0]-->product , item[1]-->quantity
         for i in user.cart:
-            total += self.prices[i[0]] * i[1]
+            total += (self.prices[i[0]]-self.costs[i[0]]) * i[1]
         itemInCart = [i[0] for i in user.cart]
         user.emptyCart()
         # apply the discount and remove it
@@ -99,7 +99,6 @@ class Environment():
         # if user has a discounted item will land for sure on the discounted page
         if user.discountedItem is not None:
             if np.random.rand() < self.M[user.firstLandingItem][user.discountedItem]:
-                user.returner = True
                 return user.discountedItem
         else:
             # No discounted item-->will land to page of product p with probability M0[firstLandingProduct][p],
@@ -118,7 +117,7 @@ class Environment():
 
     #     return the appropriate weights to each user depending on the class of the user
     def userWeights(self, user):
-        if user.returner:
+        if user.returner and user.discountedItem is not None:
             return self.returnerWeights[user.discountedItem].copy()
         else:
             return self.weights.copy()

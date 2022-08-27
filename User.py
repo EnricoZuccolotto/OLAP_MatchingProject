@@ -6,7 +6,7 @@ class User():
         self.reservationPrice = reservationPrice
         self.discountedItem = None
         self.firstLandingItem = firstLandingItem
-        self.returner = None
+        self.returner = False
         # list of pairs <Products,quantity>
         self.cart = []
         assert len(reservationPrice) == len(buyableProducts())
