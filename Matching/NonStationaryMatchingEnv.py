@@ -1,4 +1,4 @@
-from Environment import *
+from Step1_Environment.Environment import *
 import numpy as np
 
 
