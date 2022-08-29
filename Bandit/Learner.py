@@ -14,7 +14,7 @@ class Learner():
     def __init__(self, number_arms):
         self.number_arms = number_arms
         self.t = 0  # number of rounds
-        self.rewards_per_arm = x = [[] for i in range(number_arms)]
+        self.rewards_per_arm  = [[] for i in range(number_arms)]
         self.collected_rewards = np.array([])
 
     def update_observations(self, pulled_arm, reward):
