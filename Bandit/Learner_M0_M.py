@@ -15,19 +15,12 @@ class Learner_M0_M():
         return
 
     def update(self,firstLandingItem,discountedItem,landingProduct, reward):
-        if discountedItem is not None:
+        if discountedItem is not Products.P0:
             self.learners[firstLandingItem].update(discountedItem.value, reward)
         else:
-            if landingProduct is None:
-                self.learners[firstLandingItem].updateM0(5, 6, reward)
-            else:
-                self.learners[firstLandingItem].updateM0(5,landingProduct.value, reward)
+            self.learners[firstLandingItem].updateM0(discountedItem.value,landingProduct.value, reward)
 
     def pull_arm(self,firstLandingItem):
         index=self.learners[firstLandingItem].pull_arm()
         discountedItem=list(Products)[index]
-
-        if discountedItem is Products.P0:
-            return None
-        else:
-            return discountedItem
+        return discountedItem

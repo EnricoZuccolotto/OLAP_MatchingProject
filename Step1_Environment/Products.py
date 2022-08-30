@@ -13,4 +13,5 @@ class Products(Enum):
     P3 = 2
     P4 = 3
     P5 = 4
+    # P0 means that the user lands on the webpage of a competitor and it also used in the case of no discount
     P0 = 5

@@ -13,6 +13,25 @@ from Step1_Environment.Products import Products
 # set user.returner=True
 import numpy as np
 
+def printProb():
+    if ucb:
+        for p in list(Products):
+            if p is not Products.P0:
+                print(p)
+                print(learner.learners[p].means)
+                print(learner.learners[p].M0)
+    else:
+        for p in list(Products):
+            if p is not Products.P0:
+                print(p)
+                for i in range(5):
+                    prob=learner.learners[p].beta[i][0]/(learner.learners[p].beta[i][0]+learner.learners[p].beta[i][1])
+                    print(prob)
+                print("M0")
+                for i in range(5):
+                    prob = learner.learners[p].M0_beta[i][0] / (
+                                learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
+                    print(prob)
 if __name__ == '__main__':
     # TODO: defines parameters, two different graph weights
     # initialization of the prices and costs
@@ -51,10 +70,10 @@ if __name__ == '__main__':
          }
     # initialization of the matrix M0
     M0 = {Products.P1: {Products.P1: 0.1, Products.P2: 0.05, Products.P3: 0.2, Products.P4: 0.05, Products.P5: 0.05},
-          Products.P2: {Products.P1: 0.05, Products.P2: 0.05, Products.P3: 0.05, Products.P4: 0.05, Products.P5: 0.05},
-          Products.P3: {Products.P1: 0.05, Products.P2: 0.05, Products.P3: 0.05, Products.P4: 0.05, Products.P5: 0.05},
-          Products.P4: {Products.P1: 0.05, Products.P2: 0.05, Products.P3: 0.05, Products.P4: 0.05, Products.P5: 0.05},
-          Products.P5: {Products.P1: 0.05, Products.P2: 0.05, Products.P3: 0.05, Products.P4: 0.05, Products.P5: 0.05},
+          Products.P2: {Products.P1: 0.2, Products.P2: 0.25, Products.P3: 0.15, Products.P4: 0.05, Products.P5: 0.02},
+          Products.P3: {Products.P1: 0.03, Products.P2: 0.1, Products.P3: 0.07, Products.P4: 0.05, Products.P5: 0.05},
+          Products.P4: {Products.P1: 0.01, Products.P2: 0.01, Products.P3: 0, Products.P4: 0.15, Products.P5: 0.05},
+          Products.P5: {Products.P1: 0.0, Products.P2: 0.0, Products.P3: 0.05, Products.P4: 0.03, Products.P5: 0.02},
           }
     # initialization of the 5 fixed webpages
     pages = {Products.P1: [Products.P1, Products.P2, Products.P3],
@@ -102,7 +121,8 @@ if __name__ == '__main__':
     }
     # initialization of the environment
     env = Environment(alphas, weights, returnerWeights, M, M0, 0.8, prices, costs, pages, 3)
-    learner= Learner_M0_M(1)
+    ucb=0
+    learner= Learner_M0_M(ucb)
     horizon = 1000
     delay = 2
     margins = []
@@ -154,22 +174,7 @@ if __name__ == '__main__':
 
         possibleReturnersAtTimeT.append(possibleReturningUser)
         margins.append(math.fsum(dailyMargins))
-        for p in list(Products):
-            if p is not Products.P0:
-                print(p)
-                print(learner.learners[p].means)
-                print(learner.learners[p].M0)
-        # for p in list(Products):
-        #     if p is not Products.P0:
-        #         print(p)
-        #         for i in range(5):
-        #             prob=learner.learners[p].beta[i][0]/(learner.learners[p].beta[i][0]+learner.learners[p].beta[i][1])
-        #             print(prob)
-        #         print("M0")
-        #         for i in range(5):
-        #             prob = learner.learners[p].M0_beta[i][0] / (
-        #                         learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
-        #             print(prob)
+        printProb()
 
     print(margins)
 

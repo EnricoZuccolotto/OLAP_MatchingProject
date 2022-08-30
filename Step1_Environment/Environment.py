@@ -26,7 +26,7 @@ class Environment():
         assert len(list(Products)) == len(list(alphas.values()))
         for p in buyableProducts():
             assert math.fsum(M0[p].values()) <= 1
-        return
+
 
     # Generate a User and randomly choose an reservation price for each product and the landing page
     def generateUser(self):
@@ -91,14 +91,14 @@ class Environment():
         # apply the discount and remove it
         if user.discountedItem in itemInCart and total != 0:
             total = total - self.prices[user.discountedItem]
-            user.discountedItem = None
+            user.discountedItem = Products.P0
         #  round the sum
         return float(f'{total:.2f}')
 
     # if user will return,return the product in which it will lands otherwise return None
     def returningLandingProduct(self, user):
         # if user has a discounted item will land for sure on the discounted page
-        if user.discountedItem is not None:
+        if user.discountedItem is not Products.P0:
             if np.random.rand() < self.M[user.firstLandingItem][user.discountedItem]:
                 return user.discountedItem
         else:
@@ -107,18 +107,14 @@ class Environment():
             prob = [self.M0[user.firstLandingItem][p] for p in buyableProducts()]
             userWontReturn = 1 - math.fsum(prob)
             prob = prob + [userWontReturn]
-
             product = np.random.choice(list(Products), p=prob)
             # Product.p0 it means the user wont return
-            if product is Products.P0:
-                return None
-            else:
-                return product
-        return None
+            return product
+        return Products.P0
 
     #     return the appropriate weights to each user depending on the class of the user
     def userWeights(self, user):
-        if user.returner and user.discountedItem is not None:
+        if user.returner and user.discountedItem is not Products.P0:
             return self.returnerWeights[user.discountedItem].copy()
         else:
             return self.weights.copy()
@@ -126,7 +122,7 @@ class Environment():
     def userVisits(self,user, product):
         margin=0
         # if the user doesn't land on the competitor website and he returned
-        if product is not Products.P0 and product is not None:
+        if product is not Products.P0:
             self.shoppingItems(product, user, self.userWeights(user), [])
             if len(user.cart) > 0:
                 margin=self.finalizePurchase(user)
@@ -138,6 +134,6 @@ class Environment():
     # decide if the user will return
 
     def round(self, product):
-        if product is None:
+        if product is Products.P0:
             return 0
         return 1
