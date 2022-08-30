@@ -2,7 +2,8 @@
 # Log in with your polimi email to have free access otherwise you need to pay
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import math
-from Bandit.UCB_M0_M import UCB_M0_M
+from Bandit.Learner_M0_M import Learner_M0_M
+
 from Step1_Environment.Environment import Environment
 from Step1_Environment.Products import Products
 # given a user and the page from which the user will start to navigate our website,return the reward
@@ -101,11 +102,11 @@ if __name__ == '__main__':
     }
     # initialization of the environment
     env = Environment(alphas, weights, returnerWeights, M, M0, 0.8, prices, costs, pages, 3)
-    learner= UCB_M0_M()
+    learner= Learner_M0_M(1)
     horizon = 1000
     delay = 2
     margins = []
-    numberOfDailyVisit = 10
+    numberOfDailyVisit = 1002
     # user that visited our website at time t
     # <list(users)>
     possibleReturnersAtTimeT = []
@@ -157,5 +158,18 @@ if __name__ == '__main__':
             if p is not Products.P0:
                 print(p)
                 print(learner.learners[p].means)
+                print(learner.learners[p].M0)
+        # for p in list(Products):
+        #     if p is not Products.P0:
+        #         print(p)
+        #         for i in range(5):
+        #             prob=learner.learners[p].beta[i][0]/(learner.learners[p].beta[i][0]+learner.learners[p].beta[i][1])
+        #             print(prob)
+        #         print("M0")
+        #         for i in range(5):
+        #             prob = learner.learners[p].M0_beta[i][0] / (
+        #                         learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
+        #             print(prob)
+
     print(margins)
 

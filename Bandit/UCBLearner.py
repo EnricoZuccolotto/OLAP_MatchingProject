@@ -1,6 +1,7 @@
-import numpy as np
+
 
 from Bandit.Learner import *
+
 
 class UCBLearner(Learner):
     def __init__(self, n_arms):
@@ -16,6 +17,8 @@ class UCBLearner(Learner):
         self.t += 1
         self.update_observations(pulled_arm, reward)
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
+
+    def updateWidths(self):
         for idx in range(self.number_arms):
             n = len(self.rewards_per_arm[idx])
             if n > 0:
