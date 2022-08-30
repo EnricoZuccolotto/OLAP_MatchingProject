@@ -35,7 +35,7 @@ def estimate_prob(data_set, node_index, n_nodes):
         for v in range(n_nodes):
             if v != node_index:
                 idx_v_active = np.argwhere(episode[:, v] == 1).reshape(-1)
-                if len(idx_v_active) > 0 and (len(idx_w_active) == 0 or idx_v_active < idx_w_active ):
+                if len(idx_v_active) > 0 and ( len(idx_w_active) == 0 or idx_v_active < idx_w_active ):
                     occur_v_active[v] += 1
     estimated_prob = credits / occur_v_active
     estimated_prob = np.nan_to_num(estimated_prob)
@@ -44,14 +44,14 @@ def estimate_prob(data_set, node_index, n_nodes):
 
 n_nodes = 5
 n_eps = 10000
-prob_matrix = np.random.uniform(0.0, 1, (n_nodes, n_nodes))
-node_idx =4
+prob_matrix = np.random.uniform(0.0, 1.0, (n_nodes, n_nodes))
+node_idx = 4
 dataset = []
 
 for e in range(n_eps):
     dataset.append(simulate_episode(prob_matrix, 10))
+for i in range(n_nodes):
+    est_prob = estimate_prob(dataset, i, n_nodes)
 
-estimate_prob = estimate_prob(dataset, node_idx, n_nodes)
-
-print(prob_matrix)
-print(estimate_prob)
+    print(prob_matrix[:, i])
+    print(est_prob)

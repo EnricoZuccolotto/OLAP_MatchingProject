@@ -2,7 +2,7 @@
 # Log in with your polimi email to have free access otherwise you need to pay
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import math
-
+from CreditAssignment.weightsLearner import weightsLearner
 from Step1_Environment.Environment import Environment
 from Step1_Environment.Products import Products
 # given a user and the page from which the user will start to navigate our website,return the reward
@@ -103,11 +103,11 @@ if __name__ == '__main__':
     # initialization of the environment
     env = Environment(alphas, weights, returnerWeights, M, M0, 0.8, prices, costs, pages, 3)
 
-
+    learnerWeights=weightsLearner()
     horizon=1
     delay=2
     margins=[]
-    numberOfDailyVisit=100
+    numberOfDailyVisit=10000
     # user that visited our website at time t
     # <list(users)>
     possibleReturnersAtTimeT=[]
@@ -149,7 +149,8 @@ if __name__ == '__main__':
             # if the user actually navigated our website
             # add it to possible returners and give the appropriate discount
             if margin is not None:
-                # print(env.returnEpisode())
+                if u.returner:
+                    learnerWeights.updateEstimates(env.returnEpisode())
                 # TODO: what to do in case the user actually didn't use the discount
                 # u.discountedItem = learner.pull_arm()
                 possibleReturningUser.append(u)
@@ -157,5 +158,6 @@ if __name__ == '__main__':
 
         possibleReturnersAtTimeT.append(possibleReturningUser)
         margins.append(math.fsum(dailyMargins))
+        print(learnerWeights.estimated_prob)
     print(margins)
 

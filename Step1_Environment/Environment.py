@@ -3,7 +3,7 @@ from Step1_Environment.Products import Products
 from Step1_Environment.Products import buyableProducts
 import numpy as np
 from Step1_Environment.User import User
-
+import copy
 
 class Environment():
     def __init__(self, alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, maxQuantity):
@@ -17,6 +17,9 @@ class Environment():
         self.costs = costs
         self.pages = pages
         self.maxQuantity = maxQuantity
+
+
+        self.episode=[]
 
         # TODO:some other assertions
         assert len(prices) == len(buyableProducts())
@@ -42,10 +45,45 @@ class Environment():
         user = User(reservationPrice, firstLandingProduct)
         return user
 
+    def shoppingItems(self, product, user, usableWeights):
+        seen = set()
+        # first visit
+        seen.add(product)
+        productsUserWantToVisitNext= [[] for _ in range(5)]
+        result = self.shoppingItem(product, user, usableWeights)
+        productsUserWantToVisitNext[0] = [product]
+        productsUserWantToVisitNext[1] = result[0]
+        usableWeights = result[1]
+        # next visits
+        episode=[[0 for _ in range(5)]]
+        episode[0][product.value]=1
+
+        i=0
+        t=1
+        while t<5 and len(productsUserWantToVisitNext[t])>0 :
+            if i == 0:
+                episode.append([0 for _ in range(5)])
+            result = self.shoppingItem(productsUserWantToVisitNext[t][i], user, usableWeights)
+            seen.add(productsUserWantToVisitNext[t][i])
+            episode[t][productsUserWantToVisitNext[t][i].value] = 1
+            i+=1
+            if t<4:
+                pi=productsUserWantToVisitNext[t+1]+result[0]
+                productsUserWantToVisitNext[t+1]= [p for p in pi if p not in seen]
+                usableWeights = result[1]
+
+            if len(productsUserWantToVisitNext[t])==i:
+                i=0
+                t+=1
+
+        self.episode=episode
+
+
     # Given a webpage,a user, the weights graph related to the user will fill up the cart of the user
     # Queue-->queue of webpages that the user wants to visit
     # Does not take Product.P0
-    def shoppingItems(self, product, user, weights, queue):
+    def shoppingItem(self, product, user, usableWeights):
+        queue=[]
         page = self.pages[product]
 
         # Buy the quantity of products and set to 0 the possibility to return to this webpage
@@ -56,24 +94,19 @@ class Environment():
             quantity = 0
 
         for p in buyableProducts():
-            weights[p][page[0]] = 0
+            usableWeights[p][page[0]] = 0
 
         if quantity != 0:
             # Add to the queue the secondary product webpage with a certain probability given by the graph
-            if np.random.rand() < weights[page[0]][page[1]]:
+            if np.random.rand() < usableWeights[page[0]][page[1]]:
                 queue.append(page[1])
             # Add to the queue the tertiary product webpage with a certain probability given by the graph
-            if np.random.rand() < (weights[page[0]][page[2]] * self.theta):
+            if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
                 queue.append(page[2])
 
-        # eliminates duplicate from the queue and keep order
-        queue = self.unique(queue)
+        queue=self.unique(queue)
 
-        # if there pages left to visit, visit them otherwise exit
-        if len(queue) > 0:
-            self.shoppingItems(queue.pop(0), user, weights, queue)
-
-        return
+        return [queue,usableWeights]
 
     # Method to eliminates duplicates and keep the order preserved
     def unique(self, sequence):
@@ -115,15 +148,15 @@ class Environment():
     #     return the appropriate weights to each user depending on the class of the user
     def userWeights(self, user):
         if user.returner and user.discountedItem is not Products.P0:
-            return self.returnerWeights[user.discountedItem].copy()
+            return copy.deepcopy(self.returnerWeights[user.discountedItem])
         else:
-            return self.weights.copy()
+            return copy.deepcopy(self.weights)
 
     def userVisits(self,user, product):
         margin=0
         # if the user doesn't land on the competitor website and he returned
         if product is not Products.P0:
-            self.shoppingItems(product, user, self.userWeights(user), [])
+            self.shoppingItems(product, user, self.userWeights(user))
             if len(user.cart) > 0:
                 margin=self.finalizePurchase(user)
             user.returner = True
@@ -137,3 +170,6 @@ class Environment():
         if product is Products.P0:
             return 0
         return 1
+
+    def returnEpisode(self):
+        return self.episode

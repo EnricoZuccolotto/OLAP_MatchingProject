@@ -1,10 +1,11 @@
 from Step1_Environment.Products import buyableProducts
+from Step1_Environment.Products import Products
 
 
 class User():
     def __init__(self, reservationPrice, firstLandingItem):
         self.reservationPrice = reservationPrice
-        self.discountedItem = None
+        self.discountedItem = Products.P0
         self.firstLandingItem = firstLandingItem
         self.returner = False
         # list of pairs <Products,quantity>
