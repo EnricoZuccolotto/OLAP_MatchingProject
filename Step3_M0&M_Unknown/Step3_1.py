@@ -55,11 +55,11 @@ if __name__ == '__main__':
               Products.P0: 0.1}
 
     # initialization of the weights
-    weights = {Products.P1: {Products.P1: 0, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-               Products.P2: {Products.P1: 1, Products.P2: 0, Products.P3: 1, Products.P4: 1, Products.P5: 1},
+    weights = {Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
+               Products.P2: {Products.P1:0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
                Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-               Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
-               Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
+               Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
+               Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
                }
     # initialization of the matrix M
     M = {Products.P1: {Products.P1: 0.7, Products.P2: 1, Products.P3:0.3, Products.P4: 0.4, Products.P5: 0.2},
@@ -77,9 +77,9 @@ if __name__ == '__main__':
           }
     # initialization of the 5 fixed webpages
     pages = {Products.P1: [Products.P1, Products.P2, Products.P3],
-             Products.P2: [Products.P2, Products.P2, Products.P3],
+             Products.P2: [Products.P2, Products.P3, Products.P5],
              Products.P3: [Products.P3, Products.P4, Products.P5],
-             Products.P4: [Products.P4, Products.P3, Products.P5],
+             Products.P4: [Products.P4, Products.P5, Products.P1],
              Products.P5: [Products.P5, Products.P1, Products.P3], }
 
     # initialization of the weight for each class defined by discounted product

@@ -17,6 +17,7 @@ class UCBLearner(Learner):
         self.t += 1
         self.update_observations(pulled_arm, reward)
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
+        self.updateWidths()
 
     def updateWidths(self):
         for idx in range(self.number_arms):
