@@ -2,9 +2,9 @@ import numpy as np
 
 
 class linearUCBLearner():
-    def __init__(self, arms_features, dim):
-        self.dim = dim
-        self.arms = arms_features.shape[1]
+    def __init__(self, arms_features):
+        self.dim=arms_features.shape[1]
+        self.arms = arms_features
         self.collected_rewards = []
         self.pulled_arms = []
         self.c = 2.0
@@ -19,6 +19,7 @@ class linearUCBLearner():
             arm = np.atleast_2d(arm).T
             ucb = np.dot(self.theta.T, arm) + self.c * np.sqrt(np.dot(arm.T, np.dot(np.linalg.inv(self.M), arm)))
             ucbs.append(ucb[0][0])
+        print(ucbs)
         return ucbs
 
     def pull_arm(self):

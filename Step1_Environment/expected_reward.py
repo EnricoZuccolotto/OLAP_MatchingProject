@@ -5,6 +5,7 @@ class Node:
         self.left = None
         self.right = None
         self.val = key
+        self.prob=1
 
 def build_tree(product,pages):
     root=Node(product)
@@ -21,28 +22,27 @@ def build_tree(product,pages):
 
     return root
 
-# productsThatUserCanBuy list of products or set
-def printPreorder(node,seen,productsThatUserCanBuy,tot):
-    if node and node.val in productsThatUserCanBuy:
+def buildTree(n,seen,productsThatUserCanBuy):
+    if n.val in productsThatUserCanBuy:
         # First print the data of node
-        print(node.val)
-        seen.add(node.val)
+        print(n.val)
+        print(n.prob)
+        seen.add(n.val)
 
-            # Then recur on left child
-        if node.left:
-            if node.left.val not in seen and node.left.val in productsThatUserCanBuy:
-                tot=tot*W[node.val][node.left.val]
-                tot=printPreorder(node.left,seen,productsThatUserCanBuy,tot)
-                seen.remove(node.left.val)
-        if node.right:
-            if node.right.val not in seen and node.right.val in productsThatUserCanBuy:
-                # Finally recur on right child
-                tot = tot * W[node.val][node.left.val]
-                tot = printPreorder(node.left, seen, productsThatUserCanBuy, tot)
-                printPreorder(node.right,seen,productsThatUserCanBuy,tot)
-                seen.remove(node.right.val)
-        return tot
+        # Then recur on left child
+        if pages[n.val][1] not in seen and pages[n.val][1] in productsThatUserCanBuy:
+            n.left = Node(pages[n.val][1])
+            n.left.prob=n.prob*W[n.val][n.left.val]
+            buildTree(n.left,seen,productsThatUserCanBuy)
+            seen.remove(n.left.val)
+        if pages[n.val][2] not in seen and pages[n.val][2] in productsThatUserCanBuy:
+            n.right = Node(pages[n.val][2])
+            n.right.prob = n.prob * W[n.val][n.right.val]*theta
+            buildTree(n.right, seen, productsThatUserCanBuy)
+            seen.remove(n.right.val)
 
+
+# productsThatUserCanBuy list of products or set
 
 W = {Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
            Products.P2: {Products.P1: 0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
@@ -55,6 +55,8 @@ pages = {Products.P1: [Products.P1, Products.P2, Products.P3],
              Products.P3: [Products.P3, Products.P4, Products.P5],
              Products.P4: [Products.P4, Products.P5, Products.P1],
              Products.P5: [Products.P5, Products.P1, Products.P3], }
-root=build_tree(Products.P5,pages)
-seen=set()
-printPreorder(root,seen,[Products.P1,Products.P3,Products.P2])
+
+root=Node(Products.P1)
+theta=0.7
+see=set()
+buildTree(root,see,[Products.P1,Products.P2,Products.P3])

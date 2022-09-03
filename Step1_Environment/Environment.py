@@ -18,7 +18,7 @@ class Environment():
         self.pages = pages
         self.maxQuantity = maxQuantity
 
-
+        self.productsSeen=[]
         self.episode=[]
 
         # TODO:some other assertions
@@ -46,12 +46,12 @@ class Environment():
         return user
 
     def shoppingItems(self, product, user, usableWeights):
-        seen = set()
         # first visit
-        seen.add(product)
+
         productsUserWantToVisitNext= [[] for _ in range(5)]
         result = self.shoppingItem(product, user, usableWeights)
         productsUserWantToVisitNext[0] = [product]
+
         productsUserWantToVisitNext[1] = result[0]
         usableWeights = result[1]
         # next visits
@@ -61,10 +61,10 @@ class Environment():
         i=0
         t=1
         while t<5 and len(productsUserWantToVisitNext[t])>0 :
+            seen=[i[0] for i in user.cart]
             if i == 0:
                 episode.append([0 for _ in range(5)])
             result = self.shoppingItem(productsUserWantToVisitNext[t][i], user, usableWeights)
-            seen.add(productsUserWantToVisitNext[t][i])
             episode[t][productsUserWantToVisitNext[t][i].value] = 1
             i+=1
             if t<4:
@@ -92,6 +92,7 @@ class Environment():
             user.addCart(page[0], quantity)
         else:
             quantity = 0
+            user.addCart(page[0], quantity)
 
         for p in buyableProducts():
             usableWeights[p][page[0]] = 0
@@ -104,7 +105,7 @@ class Environment():
             if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
                 queue.append(page[2])
 
-        queue=self.unique(queue)
+            queue=self.unique(queue)
 
         return [queue,usableWeights]
 
@@ -115,10 +116,16 @@ class Environment():
 
     # Method used to compute the value of the cart,if a discount is present it will use it (and delete it)
     def finalizePurchase(self, user):
+
+        self.productsSeen=[0.5, 0.5, 0.5, 0.5, 0.5]
         total = 0
         # item[0]-->product , item[1]-->quantity
         for i in user.cart:
-            total += (self.prices[i[0]]-self.costs[i[0]]) * i[1]
+            if i[1]!=0:
+                total += (self.prices[i[0]]-self.costs[i[0]]) * i[1]
+                self.productsSeen[i[0].value]=1
+            else:
+                self.productsSeen[i[0].value] = 0
         itemInCart = [i[0] for i in user.cart]
         user.emptyCart()
         # apply the discount and remove it
@@ -153,18 +160,15 @@ class Environment():
             return copy.deepcopy(self.weights)
 
     def userVisits(self,user, product):
-        margin=0
         # if the user doesn't land on the competitor website and he returned
         if product is not Products.P0:
             self.shoppingItems(product, user, self.userWeights(user))
-            if len(user.cart) > 0:
-                margin=self.finalizePurchase(user)
+            print(user.cart)
+            margin=self.finalizePurchase(user)
             user.returner = True
             return margin
         return None
 
-    # update the distribution in the bandit
-    # decide if the user will return
 
     def round(self, product):
         if product is Products.P0:
@@ -173,6 +177,9 @@ class Environment():
 
     def returnEpisode(self):
         return self.episode
+
+
+
 
 
 
