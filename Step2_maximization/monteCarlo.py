@@ -92,7 +92,7 @@ class monteCarlo():
 
 
 
-    def matcher(self,weights,returnerWeights,productsSeen,M,M0,user):
+    def matcher(self, weights,returnerWeights,productsSeen,M,M0,user):
         w=[6]
         # for p in list(Products):
         #   se P0 no discount

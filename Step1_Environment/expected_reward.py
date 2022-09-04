@@ -44,11 +44,11 @@ def buildTree(n,seen,productsThatUserCanBuy):
 
 # productsThatUserCanBuy list of products or set
 
-W = {Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
-           Products.P2: {Products.P1: 0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
-           Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-           Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
-           Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
+W = {Products.P1: {Products.P1: 0, Products.P2: 0.8, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
+           Products.P2: {Products.P1: 0.65, Products.P2: 0, Products.P3: 0.8, Products.P4: 0.4, Products.P5: 0.2},
+           Products.P3: {Products.P1: 0.7, Products.P2: 0.75, Products.P3: 0, Products.P4: 0.3, Products.P5: 0.4},
+           Products.P4: {Products.P1: 0.3, Products.P2: 0.4, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.8},
+           Products.P5: {Products.P1: 0.4, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.85, Products.P5: 0},
            }
 pages = {Products.P1: [Products.P1, Products.P2, Products.P3],
             Products.P2: [Products.P2, Products.P3, Products.P5],
