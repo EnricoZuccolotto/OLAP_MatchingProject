@@ -150,7 +150,7 @@ if __name__ == '__main__':
             # add it to possible returners and give the appropriate discount
             if margin is not None:
                 if u.returner:
-                    learnerWeights.updateEstimates(env.returnEpisode())
+                    learnerWeights.updateEstimates(u.episode)
                 # TODO: what to do in case the user actually didn't use the discount
                 # u.discountedItem = learner.pull_arm()
                 possibleReturningUser.append(u)

@@ -18,8 +18,7 @@ class Environment():
         self.pages = pages
         self.maxQuantity = maxQuantity
 
-        self.productsSeen=[]
-        self.episode=[]
+
 
         # TODO:some other assertions
         assert len(prices) == len(buyableProducts())
@@ -55,17 +54,17 @@ class Environment():
         productsUserWantToVisitNext[1] = result[0]
         usableWeights = result[1]
         # next visits
-        episode=[[0 for _ in range(5)]]
-        episode[0][product.value]=1
+        user.episode=[[0 for _ in range(5)]]
+        user.episode[0][product.value]=1
 
         i=0
         t=1
         while t<5 and len(productsUserWantToVisitNext[t])>0 :
             seen=[i[0] for i in user.cart]
             if i == 0:
-                episode.append([0 for _ in range(5)])
+                user.episode.append([0 for _ in range(5)])
             result = self.shoppingItem(productsUserWantToVisitNext[t][i], user, usableWeights)
-            episode[t][productsUserWantToVisitNext[t][i].value] = 1
+            user.episode[t][productsUserWantToVisitNext[t][i].value] = 1
             i+=1
             if t<4:
                 pi=productsUserWantToVisitNext[t+1]+result[0]
@@ -76,7 +75,7 @@ class Environment():
                 i=0
                 t+=1
 
-        self.episode=episode
+
 
 
     # Given a webpage,a user, the weights graph related to the user will fill up the cart of the user
@@ -89,10 +88,11 @@ class Environment():
         # Buy the quantity of products and set to 0 the possibility to return to this webpage
         if self.prices[page[0]] < user.reservationPrice[page[0]]:
             quantity = max(1, int(np.random.normal(self.maxQuantity, 1)))
-            user.addCart(page[0], quantity)
+            user.productsSeen[product.value] = 1
         else:
             quantity = 0
-            user.addCart(page[0], quantity)
+            user.productsSeen[product.value] = 0
+        user.addCart(page[0], quantity)
 
         for p in buyableProducts():
             usableWeights[p][page[0]] = 0
@@ -117,15 +117,11 @@ class Environment():
     # Method used to compute the value of the cart,if a discount is present it will use it (and delete it)
     def finalizePurchase(self, user):
 
-        self.productsSeen=[0.5, 0.5, 0.5, 0.5, 0.5]
         total = 0
         # item[0]-->product , item[1]-->quantity
         for i in user.cart:
-            if i[1]!=0:
-                total += (self.prices[i[0]]-self.costs[i[0]]) * i[1]
-                self.productsSeen[i[0].value]=1
-            else:
-                self.productsSeen[i[0].value] = 0
+            total += (self.prices[i[0]]-self.costs[i[0]]) * i[1]
+
         itemInCart = [i[0] for i in user.cart]
         user.emptyCart()
         # apply the discount and remove it
@@ -175,8 +171,6 @@ class Environment():
             return 0
         return 1
 
-    def returnEpisode(self):
-        return self.episode
 
 
 

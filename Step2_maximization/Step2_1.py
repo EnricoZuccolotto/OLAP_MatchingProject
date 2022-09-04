@@ -152,11 +152,11 @@ if __name__ == '__main__':
             if margin is not None:
                 # print(env.returnEpisode())
                 print('margin'+"   "+str(margin))
-                print(env.episode)
+                print(u.episode)
                 # TODO: what to do in case the user actually didn't use the discount
                 if margin >0:
                     # u.discountedItem = learner.pull_arm()
-                    print(monteCarlo.monteCarloRuns(100, Products.P1, env.weights, env.productsSeen))
+                    print(monteCarlo.monteCarloRuns(100, Products.P1, env.weights, u.productsSeen))
                 possibleReturningUser.append(u)
                 dailyMargins.append(margin)
 
