@@ -39,35 +39,42 @@ class Environment():
             reservationPrice[p] = float(f'{price:.2f}')
         #     to keep the values in order
         prob = [self.alphas[p] for p in list(Products)]
-        firstLandingProduct = np.random.choice(list(Products), p=prob)
-        # firstLandingProduct=Products.P1
+        # firstLandingProduct = np.random.choice(list(Products), p=prob)
+        firstLandingProduct=Products.P1
         user = User(reservationPrice, firstLandingProduct)
         return user
 
     def shoppingItems(self, product, user, usableWeights):
-        # first visit
-
+        # it will contain the products that the user want to visit at time t
         productsUserWantToVisitNext= [[] for _ in range(5)]
+        # user fist visit
         result = self.shoppingItem(product, user, usableWeights)
-        productsUserWantToVisitNext[0] = [product]
 
-        productsUserWantToVisitNext[1] = result[0]
+        seen = [i[0] for i in user.cart]
+        # add to the products the user want to visit next at time t=1 the unique products on which the user clicked at time 0
+        productsUserWantToVisitNext[1] = self.unique([p for p in result[0] if p not in seen])
+        # update the weights
         usableWeights = result[1]
-        # next visits
+        # initialize the episode variable will be used for the credit assignment part
         user.episode=[[0 for _ in range(5)]]
         user.episode[0][product.value]=1
 
         i=0
         t=1
+        # if we visited less than 5 times and if there are some products the user want to visit next at time t
         while t<5 and len(productsUserWantToVisitNext[t])>0 :
-            seen=[i[0] for i in user.cart]
+
             if i == 0:
                 user.episode.append([0 for _ in range(5)])
+            # visit the next product
             result = self.shoppingItem(productsUserWantToVisitNext[t][i], user, usableWeights)
+            seen = [i[0] for i in user.cart]
+            # update the episode
             user.episode[t][productsUserWantToVisitNext[t][i].value] = 1
             i+=1
+            #
             if t<4:
-                pi=productsUserWantToVisitNext[t+1]+result[0]
+                pi=self.unique(productsUserWantToVisitNext[t+1]+result[0])
                 productsUserWantToVisitNext[t+1]= [p for p in pi if p not in seen]
                 usableWeights = result[1]
 
@@ -88,10 +95,10 @@ class Environment():
         # Buy the quantity of products and set to 0 the possibility to return to this webpage
         if self.prices[page[0]] < user.reservationPrice[page[0]]:
             quantity = max(1, int(np.random.normal(self.maxQuantity, 1)))
-            user.productsSeen[product.value] = 1
+            user.probabilityFutureBehaviour[product.value] = 1
         else:
             quantity = 0
-            user.productsSeen[product.value] = 0
+            user.probabilityFutureBehaviour[product.value] = 0
         user.addCart(page[0], quantity)
 
         for p in buyableProducts():
@@ -99,10 +106,10 @@ class Environment():
 
         if quantity != 0:
             # Add to the queue the secondary product webpage with a certain probability given by the graph
-            if np.random.rand() < usableWeights[page[0]][page[1]]:
+            if np.random.rand() <= usableWeights[page[0]][page[1]]:
                 queue.append(page[1])
             # Add to the queue the tertiary product webpage with a certain probability given by the graph
-            if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
+            if np.random.rand() <= (usableWeights[page[0]][page[2]] * self.theta):
                 queue.append(page[2])
 
             queue=self.unique(queue)
@@ -159,6 +166,8 @@ class Environment():
         # if the user doesn't land on the competitor website and he returned
         if product is not Products.P0:
             self.shoppingItems(product, user, self.userWeights(user))
+            s=[i[0] for i in user.cart]
+            assert(len(s)<=5)
             print(user.cart)
             margin=self.finalizePurchase(user)
             user.returner = True

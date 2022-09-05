@@ -13,7 +13,7 @@ class User():
         # 1 means we have seen the product and bought it
         # 0 means we have seen the product and didn't bought it
         # 0.5 means the user didn't see the product
-        self.productsSeen=[0.5,0.5,0.5,0.5,0.5]
+        self.probabilityFutureBehaviour=[0.5 for _ in range(5)]
         # contains how the user explored our webpages
         self.episode=None
         assert len(reservationPrice) == len(buyableProducts())
