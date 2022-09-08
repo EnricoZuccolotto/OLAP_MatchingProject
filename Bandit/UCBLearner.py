@@ -11,7 +11,7 @@ class UCBLearner(Learner):
 
     def pull_arm(self):
         idx = self.means + self.widths
-        return np.random.choice(np.where(idx==idx.max())[0])
+        return idx
 
     def update(self, pulled_arm, reward):
         self.t += 1

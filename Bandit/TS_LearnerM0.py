@@ -18,4 +18,6 @@ class TS_LearnerM0(TS_learner):
                 self.M0_beta[idx, 0] += 0
                 self.M0_beta[idx, 1] += 1.0
 
-
+    def pull_arm_M0(self):
+        idx = np.random.beta(self.M0_beta[:, 0], self.M0_beta[:, 1])
+        return idx

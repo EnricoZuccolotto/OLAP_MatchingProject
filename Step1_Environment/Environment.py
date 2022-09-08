@@ -39,8 +39,8 @@ class Environment():
             reservationPrice[p] = float(f'{price:.2f}')
         #     to keep the values in order
         prob = [self.alphas[p] for p in list(Products)]
-        # firstLandingProduct = np.random.choice(list(Products), p=prob)
-        firstLandingProduct=Products.P1
+        firstLandingProduct = np.random.choice(list(Products), p=prob)
+
         user = User(reservationPrice, firstLandingProduct)
         return user
 
@@ -106,10 +106,10 @@ class Environment():
 
         if quantity != 0:
             # Add to the queue the secondary product webpage with a certain probability given by the graph
-            if np.random.rand() <= usableWeights[page[0]][page[1]]:
+            if np.random.rand() < usableWeights[page[0]][page[1]]:
                 queue.append(page[1])
             # Add to the queue the tertiary product webpage with a certain probability given by the graph
-            if np.random.rand() <= (usableWeights[page[0]][page[2]] * self.theta):
+            if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
                 queue.append(page[2])
 
             queue=self.unique(queue)
@@ -166,9 +166,6 @@ class Environment():
         # if the user doesn't land on the competitor website and he returned
         if product is not Products.P0:
             self.shoppingItems(product, user, self.userWeights(user))
-            s=[i[0] for i in user.cart]
-            assert(len(s)<=5)
-            print(user.cart)
             margin=self.finalizePurchase(user)
             user.returner = True
             return margin

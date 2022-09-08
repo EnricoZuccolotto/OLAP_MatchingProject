@@ -3,8 +3,9 @@
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import math
 from Bandit.Learner_M0_M import Learner_M0_M
-
+from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
+from Step1_Environment.User import User
 from Step1_Environment.Products import Products
 # given a user and the page from which the user will start to navigate our website,return the reward
 # check if product is diff from P0
@@ -32,6 +33,16 @@ def printProb():
                     prob = learner.learners[p].M0_beta[i][0] / (
                                 learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
                     print(prob)
+
+
+
+
+def returningVisit(user1):
+    landingProduct = env.returningLandingProduct(user1)
+    reward = env.round(landingProduct)
+    learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
+    margin = env.userVisits(user1, landingProduct)
+    return margin
 if __name__ == '__main__':
     # TODO: defines parameters, two different graph weights
     # initialization of the prices and costs
@@ -119,22 +130,26 @@ if __name__ == '__main__':
         Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
         Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
     }
+    theta=0.8
     # initialization of the environment
-    env = Environment(alphas, weights, returnerWeights, M, M0, 0.8, prices, costs, pages, 3)
-    ucb=0
+    env = Environment(alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, 3)
+    matchingBestDiscountCode = matchingBestDiscountCode(theta, pages, prices, costs)
+    ucb=1
     learner= Learner_M0_M(ucb)
-    horizon = 1000
-    delay = 2
+    horizon = 100
+    delay = 30
     margins = []
-    numberOfDailyVisit = 1002
+    optimalMargins=[]
+    numberOfDailyVisit = 100
     # user that visited our website at time t
     # <list(users)>
     possibleReturnersAtTimeT = []
     # TODO: difference between clairvoyant solution and our solution
     for t in range(horizon):
-
+        print(t)
         userVisitingToday = []
-        dailyMargins = []
+        dailyMargins = [0]
+        dailyOptimalMargins = [0]
         possibleReturningUser = []
         randomNumberNewVisits = int(np.random.normal(numberOfDailyVisit, numberOfDailyVisit / 4))
 
@@ -155,26 +170,40 @@ if __name__ == '__main__':
             # update the distribution of M and M0
             # compute the margin and apply the discount
             if u.returner:
-                landingProduct = env.returningLandingProduct(u)
-                reward = env.round(landingProduct)
-                learner.update(u.firstLandingItem,u.discountedItem,landingProduct, reward)
-                margin = env.userVisits(u, landingProduct)
-
+                discountedItem=u.discountedItem
+                margin=returningVisit(u)
+                dailyMargins.append(margin)
+                optimalDiscountedItem=matchingBestDiscountCode.matcher(weights, returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem], u)
+                if optimalDiscountedItem is not discountedItem:
+                    user2=User(u.reservationPrice,u.firstLandingItem)
+                    user2.discountedItem=optimalDiscountedItem
+                    user2.probabilityFutureBehaviour=u.probabilityFutureBehaviour
+                    optimalMargin=returningVisit(user2)
+                    if optimalMargin is not None:
+                        dailyOptimalMargins.append(optimalMargin)
+                else:
+                    if margin is not None:
+                        dailyOptimalMargins.append(margin)
             # if first visit just compute the margin
-            else:
-                margin = env.userVisits(u, u.firstLandingItem)
-
             # if the user actually navigated our website
             # add it to possible returners and give the appropriate discount
-            if margin is not None:
-                # TODO: what to do in case the user actually didn't use the discount
-                u.discountedItem = learner.pull_arm(u.firstLandingItem)
-                possibleReturningUser.append(u)
-                dailyMargins.append(margin)
+
+            else:
+                margin = env.userVisits(u, u.firstLandingItem)
+                if margin is not None:
+                    dailyOptimalMargins.append(margin)
+                    dailyMargins.append(margin)
+                    if margin > 0:
+                        u.discountedItem = matchingBestDiscountCode.matcher(weights, returnerWeights,
+                                                                            learner.pull_arm(u.firstLandingItem),
+                                                                            learner.pull_arm_M0(u.firstLandingItem), u)
+                    possibleReturningUser.append(u)
 
         possibleReturnersAtTimeT.append(possibleReturningUser)
         margins.append(math.fsum(dailyMargins))
-        printProb()
+        optimalMargins.append(math.fsum(dailyOptimalMargins))
 
+    printProb()
     print(margins)
+    print(optimalMargins)
 

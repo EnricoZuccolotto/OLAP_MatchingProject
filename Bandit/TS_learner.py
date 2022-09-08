@@ -7,7 +7,7 @@ class TS_learner(Learner):
         self.beta = np.ones((n_arms, 2))  # we have 2 params for each arm: alpha and beta
 
     def pull_arm(self):
-        idx = np.argmax(np.random.beta(self.beta[:, 0], self.beta[:, 1]))
+        idx = np.random.beta(self.beta[:, 0], self.beta[:, 1])
         return idx
 
     def update(self, pulled_arm, reward):

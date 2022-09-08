@@ -24,14 +24,12 @@ class matchingBestDiscountCode():
         for i in range(len(productsSeen)):
             if productsSeen[i]==0:
                 for p in buyableProducts():
-                    weights[p][buyableProducts()[i]]=0
+                    weights[buyableProducts()[i]][p]=0
 
         for i in range(n):
             self.shoppingItems(product,copy.deepcopy(weights))
         rew=0
-        print(self.z/n)
-        for i in self.z/n:
-            assert i<=1
+
         for p in buyableProducts():
             rew+= self.z[p.value] / n * (self.prices[p]-self.costs[p]) * productsSeen[p.value]
         return rew
@@ -82,10 +80,10 @@ class matchingBestDiscountCode():
             usableWeights[p][page[0]] = 0
 
             # Add to the queue the secondary product webpage with a certain probability given by the graph
-        if np.random.rand() <= usableWeights[page[0]][page[1]]:
+        if np.random.rand() < usableWeights[page[0]][page[1]]:
             queue.append(page[1])
             # Add to the queue the tertiary product webpage with a certain probability given by the graph
-        if np.random.rand() <= (usableWeights[page[0]][page[2]] * self.theta):
+        if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
             queue.append(page[2])
 
         queue=self.unique(queue)
@@ -101,25 +99,27 @@ class matchingBestDiscountCode():
 
     def matcher(self,weights,returnerWeights,M,M0,user):
         w=np.zeros(6)
-        print(user.probabilityFutureBehaviour)
         for p in list(Products):
             if p is Products.P0:
-                print('no discount case')
+                # no discount case
                 w[p.value]=self.noDiscountCase(weights,M0,user)
             else:
-                print('discount case '+str(p))
+                # in case we have a discount
                 w[p.value]=self.discountCase(returnerWeights[p],M,user,p)
-
-        print(w)
-        return list(Products)[np.argmax(w)]
+        w=np.nan_to_num(w)
+        return list(Products)[np.random.choice(np.where(w == max(w))[0])]
 
 
     def noDiscountCase(self,weights,M0,user):
         reward=0
         for p in buyableProducts():
-            reward+= self.monteCarloRuns(100, p, copy.deepcopy(weights), user.probabilityFutureBehaviour) * M0[user.firstLandingItem][p]
+            r=self.monteCarloRuns(100, p, copy.deepcopy(weights), user.probabilityFutureBehaviour)
+            if r>0:
+                reward+= r * M0[p]
         return reward
 
     def discountCase(self,returnerWeights,M,user,p):
-        reward= (self.monteCarloRuns(100, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour) - self.prices[p]) * M[user.firstLandingItem][p]
+        reward= (self.monteCarloRuns(100, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour) - self.prices[p])
+        if reward!=0:
+            reward=reward * M[p]
         return reward

@@ -23,6 +23,9 @@ class UCBLearner_M0(UCBLearner):
             else:
                 self.M0_width[idx] = np.inf
 
+    def pull_arm_M0(self):
+        idx = self.M0 + self.M0_width
+        return idx
 
 
 

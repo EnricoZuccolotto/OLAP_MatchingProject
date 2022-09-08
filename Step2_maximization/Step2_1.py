@@ -103,9 +103,10 @@ if __name__ == '__main__':
         Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
         Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
     }
+    theta=0.8
     # initialization of the environment
-    env = Environment(alphas, weights, returnerWeights, M, M0, 0.8, prices, costs, pages, 3)
-    monteCarlo=matchingBestDiscountCode(0.8, pages, prices, costs)
+    env = Environment(alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, 3)
+    matchingBestDiscountCode=matchingBestDiscountCode(theta, pages, prices, costs)
 
     horizon=10
     delay=2
@@ -118,10 +119,9 @@ if __name__ == '__main__':
     for t in range(horizon):
 
         userVisitingToday=[]
-        dailyMargins=[]
+        dailyMargins=[0]
         possibleReturningUser=[]
         randomNumberNewVisits=int(np.random.normal(numberOfDailyVisit,numberOfDailyVisit/4))
-        # randomNumberNewVisits=1
         # generate a random number of new users
         for i in range(randomNumberNewVisits):
             userVisitingToday.append(env.generateUser())
@@ -135,33 +135,22 @@ if __name__ == '__main__':
         np.random.shuffle(userVisitingToday)
 
         for u in userVisitingToday:
-            # if he is a possible returner compute the landing product
-            # reward 1 if he returned 0 otherwise
-            # update the distribution of M and M0
-            # compute the margin and apply the discount
-            if u.returner:
 
+            if u.returner:
                 landingProduct = env.returningLandingProduct(u)
-                reward = env.round(landingProduct)
-                # learner.update(u.firstLandingItem,u.discountedItem,landingProduct, reward)
                 margin = env.userVisits(u, landingProduct)
 
             # if first visit just compute the margin
             else:
                 margin = env.userVisits(u,u.firstLandingItem)
-
+                if margin is not None:
+                    possibleReturningUser.append(u)
             # if the user actually navigated our website
             # add it to possible returners and give the appropriate discount
             if margin is not None:
-                # print(env.returnEpisode())
-                print('margin'+"   "+str(margin))
-                print('episode' )
-                print(u.episode)
-                # TODO: what to do in case the user actually didn't use the discount
                 if margin >0:
-                    # u.discountedItem = learner.pull_arm()
-                    u.discountedItem=monteCarlo.matcher(weights,returnerWeights,M,M0,u)
-                possibleReturningUser.append(u)
+                    u.discountedItem=matchingBestDiscountCode.matcher(weights,returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem],u)
+
                 dailyMargins.append(margin)
 
         possibleReturnersAtTimeT.append(possibleReturningUser)

@@ -21,6 +21,15 @@ class Learner_M0_M():
             self.learners[firstLandingItem].updateM0(discountedItem.value,landingProduct.value, reward)
 
     def pull_arm(self,firstLandingItem):
-        index=self.learners[firstLandingItem].pull_arm()
-        discountedItem=list(Products)[index]
-        return discountedItem
+        idx=self.learners[firstLandingItem].pull_arm()
+        M={}
+        for p in buyableProducts():
+            M[p]=idx[p.value]
+        return M
+
+    def pull_arm_M0(self,firstLandingItem):
+        idxs=self.learners[firstLandingItem].pull_arm_M0()
+        M0 = {}
+        for p in buyableProducts():
+            M0[p] = idxs[p.value]
+        return M0
