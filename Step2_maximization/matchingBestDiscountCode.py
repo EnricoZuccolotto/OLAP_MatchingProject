@@ -75,7 +75,6 @@ class matchingBestDiscountCode():
 
         # Update z value
         self.z[product.value]+=1
-
         for p in buyableProducts():
             usableWeights[p][page[0]] = 0
 
@@ -123,3 +122,16 @@ class matchingBestDiscountCode():
         if reward!=0:
             reward=reward * M[p]
         return reward
+
+    def matcherAggregatedReturningUsers(self,weights,returnerWeights,M,M0,user):
+        w=np.zeros(6)
+        for p in list(Products):
+            if p is Products.P0:
+                # no discount case
+                w[p.value]=self.noDiscountCase(weights,M0,user)
+            else:
+                # in case we have a discount
+                w[p.value]=self.discountCase(returnerWeights,M,user,p)
+        w=np.nan_to_num(w)
+        return list(Products)[np.random.choice(np.where(w == max(w))[0])]
+

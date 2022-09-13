@@ -1,3 +1,5 @@
+import copy
+
 from Step1_Environment.Products import Products
 from Step1_Environment.Products import buyableProducts
 import numpy as np
@@ -35,3 +37,15 @@ class weightsLearner():
     def updateEstimates(self,episode):
         for p in buyableProducts():
             self.estimate_prob(episode,p)
+
+    def returnWeights(self):
+        weights={}
+        for p in buyableProducts():
+            w={}
+            for p1 in buyableProducts():
+                w[p1]=self.estimated_prob[p1][p.value]
+            weights[p]=w
+        print(self.estimated_prob)
+
+
+        return copy.deepcopy(weights)
