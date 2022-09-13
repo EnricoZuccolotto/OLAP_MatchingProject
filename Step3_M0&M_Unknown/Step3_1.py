@@ -43,8 +43,8 @@ def returningVisit(user1):
     landingProduct = env.returningLandingProduct(user1)
     reward = env.round(landingProduct)
     learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
-    margin = env.userVisits(user1, landingProduct)
-    return margin
+    m = env.userVisits(user1, landingProduct)
+    return m
 if __name__ == '__main__':
     # TODO: defines parameters, two different graph weights
     # initialization of the prices and costs
@@ -136,9 +136,9 @@ if __name__ == '__main__':
     matchingBestDiscountCode = matchingBestDiscountCode(theta, pages, prices, costs)
     ucb=1
     learner= Learner_M0_M(ucb)
-    n_experiment= 1
-    horizon = 1000
-    delay = 30
+    n_experiment= 100
+    horizon = 365
+    delay = 1
     rewards_per_exp=[]
     numberOfDailyVisit = 100
     # user that visited our website at time t
@@ -150,15 +150,13 @@ if __name__ == '__main__':
         # TODO: difference between clairvoyant solution and our solution
         for t in range(horizon):
             print(t)
-            userVisitingToday = []
             dailyMargins = [0]
             dailyOptimalMargins = [0]
             possibleReturningUser = []
             randomNumberNewVisits = max(0,int(np.random.normal(numberOfDailyVisit, numberOfDailyVisit / 4)))
 
             # generate a random number of new users
-            for i in range(randomNumberNewVisits):
-                userVisitingToday.append(env.generateUser())
+            userVisitingToday=env.generateRandomUser(randomNumberNewVisits)
 
             # get the possible returning user from t-delay time
             if t - delay >= 0:
@@ -174,36 +172,39 @@ if __name__ == '__main__':
                 # compute the margin and apply the discount
                 if u.returner:
                     discountedItem=copy.deepcopy(u.discountedItem)
-                    margin=returningVisit(u)
-                    if margin is not None:
-                        dailyMargins.append(margin)
-                    optimalDiscountedItem=matchingBestDiscountCode.matcher(weights, returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem], u)
-                    if optimalDiscountedItem is not discountedItem:
+                    probFutureBehaviour=copy.deepcopy(u.probabilityFutureBehaviour)
 
-                        user2=User(u.reservationPrice,u.firstLandingItem)
-                        user2.discountedItem=optimalDiscountedItem
-                        user2.probabilityFutureBehaviour=u.probabilityFutureBehaviour
-                        optimalMargin=returningVisit(user2)
-                        if optimalMargin is not None:
-                            dailyOptimalMargins.append(optimalMargin)
+
+                    margin=returningVisit(u)
+
+
+                    dailyMargins.append(margin)
+
+
+                    u.probabilityFutureBehaviour=probFutureBehaviour
+                    u.discountedItem=matchingBestDiscountCode.matcher(weights, returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem], u)
+
+
+                    if u.discountedItem is not discountedItem:
+                        optimalMargin=returningVisit(u)
+                        dailyOptimalMargins.append(optimalMargin)
                     else:
-                        if margin is not None:
-                            dailyOptimalMargins.append(margin)
+                        dailyOptimalMargins.append(margin)
                 # if first visit just compute the margin
                 # if the user actually navigated our website
                 # add it to possible returners and give the appropriate discount
 
                 else:
                     margin = env.userVisits(u, u.firstLandingItem)
-                    if margin is not None:
-                        dailyOptimalMargins.append(margin)
-                        dailyMargins.append(margin)
-                        if margin > 0:
+                    if margin>=0:
+                        if margin>0:
                             u.discountedItem = matchingBestDiscountCode.matcher(weights, returnerWeights,
                                                                                 learner.pull_arm(u.firstLandingItem),
                                                                                 learner.pull_arm_M0(u.firstLandingItem), u)
-                        possibleReturningUser.append(u)
+                            dailyOptimalMargins.append(margin)
+                            dailyMargins.append(margin)
 
+                        possibleReturningUser.append(u)
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
         cumRegret = np.cumsum(instantRegret)

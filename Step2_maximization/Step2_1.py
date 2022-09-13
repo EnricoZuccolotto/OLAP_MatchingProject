@@ -111,20 +111,19 @@ if __name__ == '__main__':
     horizon=10
     delay=2
     margins=[]
-    numberOfDailyVisit=10
+    numberOfDailyVisit=100
     # user that visited our website at time t
     # <list(users)>
     possibleReturnersAtTimeT=[]
     # TODO: difference between clairvoyant solution and our solution
     for t in range(horizon):
 
-        userVisitingToday=[]
         dailyMargins=[0]
         possibleReturningUser=[]
         randomNumberNewVisits=int(np.random.normal(numberOfDailyVisit,numberOfDailyVisit/4))
         # generate a random number of new users
-        for i in range(randomNumberNewVisits):
-            userVisitingToday.append(env.generateUser())
+
+        userVisitingToday=env.generateRandomUser(randomNumberNewVisits)
 
         # get the possible returning user from t-delay time
         if t-delay>=0:
@@ -143,15 +142,13 @@ if __name__ == '__main__':
             # if first visit just compute the margin
             else:
                 margin = env.userVisits(u,u.firstLandingItem)
-                if margin is not None:
-                    possibleReturningUser.append(u)
+                possibleReturningUser.append(u)
             # if the user actually navigated our website
             # add it to possible returners and give the appropriate discount
-            if margin is not None:
+            if margin>=0:
                 if margin >0:
                     u.discountedItem=matchingBestDiscountCode.matcher(weights,returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem],u)
-
-                dailyMargins.append(margin)
+                    dailyMargins.append(margin)
 
         possibleReturnersAtTimeT.append(possibleReturningUser)
         margins.append(math.fsum(dailyMargins))

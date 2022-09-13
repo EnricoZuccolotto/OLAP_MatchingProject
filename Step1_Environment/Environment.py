@@ -29,6 +29,13 @@ class Environment():
         for p in buyableProducts():
             assert math.fsum(M0[p].values()) <= 1
 
+    def generateRandomUser(self,n):
+        l=[]
+        for i in range(n):
+            u=self.generateUser()
+            if u is not None:
+                l.append(u)
+        return l
 
     # Generate a User and randomly choose an reservation price for each product and the landing page
     def generateUser(self):
@@ -42,6 +49,8 @@ class Environment():
         firstLandingProduct = np.random.choice(list(Products), p=prob)
 
         user = User(reservationPrice, firstLandingProduct)
+        if firstLandingProduct is Products.P0:
+            return
         return user
 
     def shoppingItems(self, product, user, usableWeights):
@@ -169,7 +178,7 @@ class Environment():
             margin=self.finalizePurchase(user)
             user.returner = True
             return margin
-        return None
+        return 0
 
 
     def round(self, product):
