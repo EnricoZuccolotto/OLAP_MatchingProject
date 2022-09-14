@@ -106,7 +106,7 @@ if __name__ == '__main__':
     theta=0.8
     # initialization of the environment
     env = Environment(alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, 3)
-    matchingBestDiscountCode=matchingBestDiscountCode(theta, pages, prices, costs)
+    matchingBestDiscountCode=matchingBestDiscountCode(theta, pages, prices, costs,100)
 
     horizon=10
     delay=2

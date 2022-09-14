@@ -6,12 +6,13 @@ from Step1_Environment.Products import buyableProducts
 from Step1_Environment.Products import Products
 
 class matchingBestDiscountCode():
-    def __init__(self,theta,pages,prices,costs):
+    def __init__(self,theta,pages,prices,costs,n):
         self.theta=theta
         self.pages=pages
         self.costs=costs
         self.prices=prices
         self.z=np.zeros(5)
+        self.numberOfRuns=n
         return
     # product->fist product the user will visit
     # weight associated to user
@@ -112,13 +113,13 @@ class matchingBestDiscountCode():
     def noDiscountCase(self,weights,M0,user):
         reward=0
         for p in buyableProducts():
-            r=self.monteCarloRuns(100, p, copy.deepcopy(weights), user.probabilityFutureBehaviour)
+            r=self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(weights), user.probabilityFutureBehaviour)
             if r>0:
                 reward+= r * M0[p]
         return reward
 
     def discountCase(self,returnerWeights,M,user,p):
-        reward= (self.monteCarloRuns(100, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour) - self.prices[p])
+        reward= (self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour) - self.prices[p])
         if reward!=0:
             reward=reward * M[p]
         return reward
