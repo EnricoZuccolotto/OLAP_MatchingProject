@@ -179,7 +179,7 @@ if __name__ == '__main__':
 
                     margin=returningVisit(u)
 
-                    learnerWeights.updateEstimates(u.episode)
+
                     dailyMargins.append(margin)
 
 
@@ -192,17 +192,21 @@ if __name__ == '__main__':
                         dailyOptimalMargins.append(optimalMargin)
                     else:
                         dailyOptimalMargins.append(margin)
+
                 # if first visit just compute the margin
                 # if the user actually navigated our website
                 # add it to possible returners and give the appropriate discount
 
                 else:
                     margin = env.userVisits(u, u.firstLandingItem)
+
+                    learnerWeights.updateEstimates(u.episode)
                     if margin>=0:
                         if margin>0:
-                            u.discountedItem = matchingBestDiscountCode.matcherAggregatedReturningUsers(weights, learnerWeights.returnWeights(),
+                            u.discountedItem = matchingBestDiscountCode.matcher( learnerWeights.returnWeights(),returnerWeights,
                                                                                 learner.pull_arm(u.firstLandingItem),
                                                                                 learner.pull_arm_M0(u.firstLandingItem), u)
+
 
                         possibleReturningUser.append(u)
 

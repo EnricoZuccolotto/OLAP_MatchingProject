@@ -136,11 +136,11 @@ if __name__ == '__main__':
     matchingBestDiscountCode = matchingBestDiscountCode(theta, pages, prices, costs)
     ucb=1
     learner= Learner_M0_M(ucb)
-    n_experiment= 100
-    horizon = 365
-    delay = 1
+    n_experiment= 2
+    horizon = 250
+    delay = 30
     rewards_per_exp=[]
-    numberOfDailyVisit = 100
+    numberOfDailyVisit = 300
     # user that visited our website at time t
     # <list(users)>
     for e in range(n_experiment):
@@ -176,9 +176,9 @@ if __name__ == '__main__':
 
 
                     margin=returningVisit(u)
-
-
                     dailyMargins.append(margin)
+
+
 
 
                     u.probabilityFutureBehaviour=probFutureBehaviour
@@ -201,8 +201,6 @@ if __name__ == '__main__':
                             u.discountedItem = matchingBestDiscountCode.matcher(weights, returnerWeights,
                                                                                 learner.pull_arm(u.firstLandingItem),
                                                                                 learner.pull_arm_M0(u.firstLandingItem), u)
-                            dailyOptimalMargins.append(margin)
-                            dailyMargins.append(margin)
 
                         possibleReturningUser.append(u)
             possibleReturnersAtTimeT.append(possibleReturningUser)

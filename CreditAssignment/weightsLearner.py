@@ -16,20 +16,20 @@ class weightsLearner():
 
     def estimate_prob(self,episode, product):
         episode=np.array(episode)
-        print(episode)
+
         idx_w_active = np.argwhere(episode[:, product.value] == 1).reshape(-1)
-        print(str(product)+"   active:"+str(idx_w_active))
+
         if len(idx_w_active) > 0 and idx_w_active > 0:
             active_nodes_in_prev_step = episode[idx_w_active - 1, :].reshape(-1)
-            print(active_nodes_in_prev_step)
+
             self.credits[product] += active_nodes_in_prev_step / np.sum(active_nodes_in_prev_step)
-            print(self.credits[product])
+
         for v in range(self.n_nodes):
             if v != product.value:
                 idx_v_active = np.argwhere(episode[:, v] == 1).reshape(-1)
                 if len(idx_v_active) > 0 and (len(idx_w_active) == 0 or idx_v_active < idx_w_active):
                     self.occur_v_active[product][v] += 1
-                    print(self.occur_v_active[product])
+
         self.estimated_prob[product] = self.credits[product]/ self.occur_v_active[product]
         self.estimated_prob[product] = np.nan_to_num(self.estimated_prob[product])
 
@@ -45,7 +45,7 @@ class weightsLearner():
             for p1 in buyableProducts():
                 w[p1]=self.estimated_prob[p1][p.value]
             weights[p]=w
-        print(self.estimated_prob)
+        print(weights)
 
 
         return copy.deepcopy(weights)
