@@ -5,7 +5,8 @@ import copy
 import math
 from Bandit.Learner_M0_M import Learner_M0_M
 from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
-from Step1_Environment.Environment import Environment
+from Step1_Environment.NonStationaryEnv import NonStationaryEnv
+
 from Step1_Environment.Products import Products
 import matplotlib.pyplot as plt
 # given a user and the page from which the user will start to navigate our website,return the reward
@@ -95,49 +96,53 @@ if __name__ == '__main__':
              Products.P5: [Products.P5, Products.P1, Products.P3], }
 
     # initialization of the weight for each class defined by discounted product
-    returnerWeights = {Products.P1: {
-        Products.P1: {Products.P1: 0, Products.P2: 0.65, Products.P3: 0.77, Products.P4: 0.32, Products.P5: 0.43},
-        Products.P2: {Products.P1: 0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
-        Products.P3: {Products.P1: 0.2, Products.P2: 0.4, Products.P3: 0, Products.P4: 0.1, Products.P5: 0.9},
-        Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
-        Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
-        }, Products.P2: {
+    returnerWeights = {}
+    returnerWeights[Products.P1] = {Products.P1: {Products.P1: 0, Products.P2: 0.65, Products.P3: 0.77, Products.P4: 0.32, Products.P5: 0.43},
+               Products.P2: {Products.P1:0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
+                 Products.P3: {Products.P1: 0.2, Products.P2: 0.4, Products.P3: 0, Products.P4: 0.1, Products.P5: 0.9},
+               Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
+               Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
+               }
+    returnerWeights[Products.P2] = {
         Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
         Products.P2: {Products.P1: 0.64, Products.P2: 0, Products.P3: 0.43, Products.P4: 0.54, Products.P5: 0.88},
         Products.P3: {Products.P1: 0.2, Products.P2: 0.4, Products.P3: 0, Products.P4: 0.1, Products.P5: 0.9},
         Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
         Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
-    }, Products.P3: {
+    }
+    returnerWeights[Products.P3] = {
         Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
         Products.P2: {Products.P1: 0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
         Products.P3: {Products.P1: 0.32, Products.P2: 0.54, Products.P3: 0, Products.P4: 0.24, Products.P5: 0.9},
         Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
         Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
-    }, Products.P4: {
+    }
+    returnerWeights[Products.P4] = {
         Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
         Products.P2: {Products.P1: 0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
         Products.P3: {Products.P1: 0.32, Products.P2: 0.54, Products.P3: 0, Products.P4: 0.24, Products.P5: 0.9},
         Products.P4: {Products.P1: 0.75, Products.P2: 0.76, Products.P3: 0.54, Products.P4: 0, Products.P5: 0.53},
         Products.P5: {Products.P1: 0.7, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.36, Products.P5: 0},
-    }, Products.P5: {
-        Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
-        Products.P2: {Products.P1: 0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
-        Products.P3: {Products.P1: 0.2, Products.P2: 0.4, Products.P3: 0, Products.P4: 0.1, Products.P5: 0.9},
-        Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
-        Products.P5: {Products.P1: 0.87, Products.P2: 0.43, Products.P3: 0.516, Products.P4: 0.436, Products.P5: 0},
-        }}
+    }
+    returnerWeights[Products.P5] = {Products.P1: {Products.P1: 0, Products.P2: 0.5, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
+               Products.P2: {Products.P1:0.4, Products.P2: 0, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.8},
+               Products.P3: {Products.P1: 0.2, Products.P2: 0.4, Products.P3: 0, Products.P4: 0.1, Products.P5: 0.9},
+               Products.P4: {Products.P1: 0.5, Products.P2: 0.6, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.3},
+               Products.P5: {Products.P1: 0.87, Products.P2: 0.43, Products.P3: 0.516, Products.P4: 0.436, Products.P5: 0},
+               }
     theta=0.8
     # initialization of the environment
-    env = Environment(alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, 3)
-    matchingBestDiscountCode = matchingBestDiscountCode(theta, pages, prices, costs,50)
+
     ucb=1
     learner= Learner_M0_M(ucb)
     n_experiment= 2
-    horizon = 180
+    horizon = 250
     delay = 30
     rewards_per_exp=[]
-    numberOfDailyVisit = 200
+    numberOfDailyVisit = 300
     # user that visited our website at time t
+    env = NonStationaryEnv(alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, 3,horizon)
+    matchingBestDiscountCode = matchingBestDiscountCode(theta, pages, prices, costs, 50)
     # <list(users)>
     for e in range(n_experiment):
         print('exp '+str(e))
@@ -145,7 +150,7 @@ if __name__ == '__main__':
         instantRegret = []
         # TODO: difference between clairvoyant solution and our solution
         for t in range(horizon):
-
+            print(t)
             dailyMargins = [0]
             dailyOptimalMargins = [0]
             possibleReturningUser = []
@@ -203,7 +208,6 @@ if __name__ == '__main__':
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
         cumRegret = np.cumsum(instantRegret)
         rewards_per_exp.append(cumRegret)
-
     printProb()
 
 

@@ -26,6 +26,8 @@ class matchingBestDiscountCode():
             if productsSeen[i]==0:
                 for p in buyableProducts():
                     weights[buyableProducts()[i]][p]=0
+        # using 1000 runs compared to using 50 runs i make an error of avg 6 percent
+        # using 1000 runs compared to using 100 runs i make an error of avg 3 percent (RSS squared error)(experimented on 300 visits)
 
         for i in range(n):
             self.shoppingItems(product,copy.deepcopy(weights))
