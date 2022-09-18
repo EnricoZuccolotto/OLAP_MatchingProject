@@ -1,33 +1,31 @@
 import math
-from Step1_Environment.Products import Products
-from Step1_Environment.Products import buyableProducts
+
 import numpy as np
 from Step1_Environment.User import User
 import copy
 
 class Environment():
-    def __init__(self, alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, maxQuantity):
+    def __init__(self, alphas, weights, returnerWeights, M, M0, prices, costs, maxQuantity):
         self.alphas = alphas
         self.weights = weights
         self.returnerWeights = returnerWeights
         self.M = M
         self.M0 = M0
-        self.theta = theta
         self.prices = prices
         self.costs = costs
-        self.pages = pages
+
         self.maxQuantity = maxQuantity
 
 
 
         # TODO:some other assertions
-        assert len(prices) == len(buyableProducts())
-        assert len(costs) == len(buyableProducts())
-        assert math.fsum(list(alphas.values())) == 1
-        assert len(pages) == len(buyableProducts())
-        assert len(list(Products)) == len(list(alphas.values()))
-        for p in buyableProducts():
-            assert math.fsum(M0[p].values()) <= 1
+        assert len(prices) == 5
+        assert len(costs) == 5
+        assert math.fsum(list(alphas)) == 1
+
+        assert 6 == len(list(alphas))
+        for p in range(5):
+            assert math.fsum(M0[p]) <= 1
 
     def generateRandomUser(self,n):
         l=[]
@@ -39,152 +37,105 @@ class Environment():
 
     # Generate a User and randomly choose an reservation price for each product and the landing page
     def generateUser(self):
-        reservationPrice = {}
-        for p in buyableProducts():
-            # np.random.normal (mean,std deviation)
-            price = np.random.normal(self.prices[p], 2)
-            reservationPrice[p] = float(f'{price:.2f}')
+         # np.random.normal (mean,std deviation)
+        reservationPrice= [max(0,np.random.normal(self.prices[p], 2)) for p in range(5)]
         #     to keep the values in order
-        prob = [self.alphas[p] for p in list(Products)]
-        firstLandingProduct = np.random.choice(list(Products), p=prob)
+        firstLandingProduct = np.random.choice([5,0,1,2,3,4],p=self.alphas)
 
-        user = User(reservationPrice, firstLandingProduct)
-        if firstLandingProduct is Products.P0:
+        if firstLandingProduct == 5:
             return
-        return user
+        return User(reservationPrice, firstLandingProduct)
 
-    def shoppingItems(self, product, user, usableWeights):
-        # it will contain the products that the user want to visit at time t
-        productsUserWantToVisitNext= [[] for _ in range(5)]
-        # user fist visit
-        result = self.shoppingItem(product, user, usableWeights)
+    def simulateEpisode(self, product, user,usableWeights):
+        prob_matrix = usableWeights.copy()
 
-        seen = [i[0] for i in user.cart]
-        # add to the products the user want to visit next at time t=1 the unique products on which the user clicked at time 0
-        productsUserWantToVisitNext[1] = self.unique([p for p in result[0] if p not in seen])
-        # update the weights
-        usableWeights = result[1]
-        # initialize the episode variable will be used for the credit assignment part
-        user.episode=[[0 for _ in range(5)]]
-        user.episode[0][product.value]=1
+        active_nodes = np.zeros(5)
+        active_nodes [product]=1
+        history = np.array([active_nodes])
+        if not self.shoppingItem(product,user):
+            return history
+        newly_active_nodes = active_nodes
+        t = 0
+        while t < 5 and np.sum(newly_active_nodes) > 0:
+            p = (prob_matrix.T * active_nodes).T
+            activated_edges = p > np.random.rand(p.shape[0], p.shape[1])
+            prob_matrix = prob_matrix * ((p != 0) == activated_edges)
+            newly_active_nodes = (np.sum(activated_edges, axis=0) > 0) * (1 - active_nodes)
+            active_nodes = np.array(active_nodes + newly_active_nodes)
+            if np.sum(newly_active_nodes)>0:
+                history = np.concatenate((history, [newly_active_nodes]), axis=0)
 
-        i=0
-        t=1
-        # if we visited less than 5 times and if there are some products the user want to visit next at time t
-        while t<5 and len(productsUserWantToVisitNext[t])>0 :
+            newly_active_nodes=[self.shoppingItem(i,user) if newly_active_nodes[i]!=0 else 0 for i in range(len(newly_active_nodes))]
 
-            if i == 0:
-                user.episode.append([0 for _ in range(5)])
-            # visit the next product
-            result = self.shoppingItem(productsUserWantToVisitNext[t][i], user, usableWeights)
-            seen = [i[0] for i in user.cart]
-            # update the episode
-            user.episode[t][productsUserWantToVisitNext[t][i].value] = 1
-            i+=1
-            #
-            if t<4:
-                pi=self.unique(productsUserWantToVisitNext[t+1]+result[0])
-                productsUserWantToVisitNext[t+1]= [p for p in pi if p not in seen]
-                usableWeights = result[1]
 
-            if len(productsUserWantToVisitNext[t])==i:
-                i=0
-                t+=1
+            t += 1
+
+        return history
+
 
 
 
 
     # Given a webpage,a user, the weights graph related to the user will fill up the cart of the user
     # Queue-->queue of webpages that the user wants to visit
-    # Does not take Product.P0
-    def shoppingItem(self, product, user, usableWeights):
-        queue=[]
-        page = self.pages[product]
 
+    def shoppingItem(self, product, user):
         # Buy the quantity of products and set to 0 the possibility to return to this webpage
-        if self.prices[page[0]] < user.reservationPrice[page[0]]:
+        if self.prices[product] < user.reservationPrice[product]:
             quantity = max(1, int(np.random.normal(self.maxQuantity, 1)))
-            user.probabilityFutureBehaviour[product.value] = 1
+            user.probabilityFutureBehaviour[product] = 1
         else:
             quantity = 0
-            user.probabilityFutureBehaviour[product.value] = 0
-        user.addCart(page[0], quantity)
+            user.probabilityFutureBehaviour[product] = 0
+        user.cart[product]=quantity
 
-        for p in buyableProducts():
-            usableWeights[p][page[0]] = 0
-
-        if quantity != 0:
-            # Add to the queue the secondary product webpage with a certain probability given by the graph
-            if np.random.rand() < usableWeights[page[0]][page[1]]:
-                queue.append(page[1])
-            # Add to the queue the tertiary product webpage with a certain probability given by the graph
-            if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
-                queue.append(page[2])
-
-            queue=self.unique(queue)
-
-        return [queue,usableWeights]
-
-    # Method to eliminates duplicates and keep the order preserved
-    def unique(self, sequence):
-        seen = set()
-        return [x for x in sequence if not (x in seen or seen.add(x))]
+        return quantity>0
 
     # Method used to compute the value of the cart,if a discount is present it will use it (and delete it)
     def finalizePurchase(self, user):
+        total = np.sum((self.prices-self.costs) * user.cart)
 
-        total = 0
-        # item[0]-->product , item[1]-->quantity
-        for i in user.cart:
-            total += (self.prices[i[0]]-self.costs[i[0]]) * i[1]
-
-        itemInCart = [i[0] for i in user.cart]
-        user.emptyCart()
         # apply the discount and remove it
-        if user.discountedItem in itemInCart and total != 0:
-            total = total - self.prices[user.discountedItem]
-            user.discountedItem = Products.P0
+        if user.discountedItem<5:
+            if user.cart[user.discountedItem] and total != 0:
+                total = total - self.prices[user.discountedItem]
+                user.discountedItem = 5
+        user.emptyCart()
         #  round the sum
-        return float(f'{total:.2f}')
+        return total
 
     # if user will return,return the product in which it will lands otherwise return None
     def returningLandingProduct(self, user):
         # if user has a discounted item will land for sure on the discounted page
-        if user.discountedItem is not Products.P0:
+        if user.discountedItem <5:
             if np.random.rand() < self.M[user.firstLandingItem][user.discountedItem]:
                 return user.discountedItem
         else:
             # No discounted item-->will land to page of product p with probability M0[firstLandingProduct][p],
             # otherwise it will not return
-            prob = [self.M0[user.firstLandingItem][p] for p in buyableProducts()]
-            userWontReturn = 1 - math.fsum(prob)
-            prob = prob + [userWontReturn]
-            product = np.random.choice(list(Products), p=prob)
+            product = np.random.choice([5,0,1,2,3,4], p=np.append([1 - math.fsum(self.M0[user.firstLandingItem])],self.M0[user.firstLandingItem]))
             # Product.p0 it means the user wont return
             return product
-        return Products.P0
+        return 5
 
     #     return the appropriate weights to each user depending on the class of the user
     def userWeights(self, user):
-        if user.returner and user.discountedItem is not Products.P0:
+        if user.returner and user.discountedItem <5:
             return copy.deepcopy(self.returnerWeights[user.discountedItem])
         else:
             return copy.deepcopy(self.weights)
 
     def userVisits(self,user, product):
         # if the user doesn't land on the competitor website and he returned
-        if product is not Products.P0:
-            self.shoppingItems(product, user, self.userWeights(user))
+        if product <5:
+            user.episode=self.simulateEpisode(product, user, self.userWeights(user))
             margin=self.finalizePurchase(user)
             user.returner = True
             return margin
         return 0
 
 
-    def round(self, product):
-        if product is Products.P0:
-            return 0
-        return 1
+
 
 
 

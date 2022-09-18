@@ -22,7 +22,7 @@ class UCBLearner(Learner):
     def updateWidths(self):
         for idx in range(self.number_arms):
             n = len(self.rewards_per_arm[idx])
-            if n > 0:
-                self.widths[idx] = np.sqrt(2 * np.log(self.t) / n)
+            if n > 1:
+                self.widths[idx] = np.sqrt(2 * np.log(self.t) / (n*(self.t-1)))
             else:
                 self.widths[idx] = np.inf

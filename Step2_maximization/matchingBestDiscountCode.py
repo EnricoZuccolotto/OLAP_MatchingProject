@@ -2,139 +2,120 @@ import copy
 import math
 
 import numpy as np
-from Step1_Environment.Products import buyableProducts
-from Step1_Environment.Products import Products
+
 
 class matchingBestDiscountCode():
-    def __init__(self,theta,pages,prices,costs,n):
-        self.theta=theta
-        self.pages=pages
+    def __init__(self,prices,costs,n):
         self.costs=costs
         self.prices=prices
         self.z=np.zeros(5)
+        self.activationProb_weights=np.zeros((5,5))
+        self.activationProb_ReturnerWeights = np.zeros((5,5))
         self.numberOfRuns=n
         return
     # product->fist product the user will visit
     # weight associated to user
     # n number of repetitions
-    def monteCarloRuns(self, n, product, weights, productsSeen):
-        self.z = np.zeros(5)
-        if productsSeen[product.value]==0:
-            return 0
+    def monteCarloRuns(self, n, product, weights):
+        self.z=np.zeros(5)
 
-        for i in range(len(productsSeen)):
-            if productsSeen[i]==0:
-                for p in buyableProducts():
-                    weights[buyableProducts()[i]][p]=0
+
+        # weights = (weights.T * ([0 if p==0 else 1 for p in productsSeen])).T
         # using 1000 runs compared to using 50 runs i make an error of avg 6 percent
         # using 1000 runs compared to using 100 runs i make an error of avg 3 percent (RSS squared error)(experimented on 300 visits)
 
         for i in range(n):
-            self.shoppingItems(product,copy.deepcopy(weights))
-        rew=0
+            self.simulateEpisode(product,copy.deepcopy(weights))
 
-        for p in buyableProducts():
-            rew+= self.z[p.value] / n * (self.prices[p]-self.costs[p]) * productsSeen[p.value]
-        return rew
+        return self.z/n
 
-    def shoppingItems(self, product, usableWeights):
-        seen = set()
-        # first visit
-        seen.add(product)
-        productsUserWantToVisitNext= [[] for _ in range(5)]
-        result = self.shoppingItem(product, usableWeights)
-        productsUserWantToVisitNext[1] = self.unique([p for p in result[0] if p not in seen])
-        usableWeights = result[1]
-        # next visits
-        i=0
-        t=1
-        while t<5 and len(productsUserWantToVisitNext[t])>0 :
-            result = self.shoppingItem(productsUserWantToVisitNext[t][i], usableWeights)
-            seen.add(productsUserWantToVisitNext[t][i])
-            i+=1
+    def simulateEpisode(self, product, usableWeights):
+        prob_matrix = usableWeights.copy()
+        active_nodes  = np.zeros(5)
+        active_nodes [product] = 1
+        self.z[product]+=1
+        newly_active_nodes = active_nodes
+        t = 0
+        while t < 5 and np.sum(newly_active_nodes) > 0:
+            p = (prob_matrix.T * active_nodes).T
+            activated_edges = p > np.random.rand(p.shape[0], p.shape[1])
+            prob_matrix = prob_matrix * ((p != 0) == activated_edges)
+            newly_active_nodes = (np.sum(activated_edges, axis=0) > 0) * (1 - active_nodes)
+            self.z[newly_active_nodes==1] += 1
+            active_nodes = np.array(active_nodes + newly_active_nodes)
 
-            if t<4:
-                pi=self.unique(productsUserWantToVisitNext[t+1]+result[0])
-                productsUserWantToVisitNext[t+1]= [p for p in pi if p not in seen]
-                usableWeights = result[1]
 
-            if len(productsUserWantToVisitNext[t])==i:
-                i=0
-                t+=1
-        # print(episode)
-        # for i in range(len(episode)):
-        #     for j in range(5):
-        #         assert episode[i][j]<=1
+            t += 1
+
+        return
 
 
 
 
-    # Given a webpage,a user, the weights graph related to the user will fill up the cart of the user
-    # Queue-->queue of webpages that the user wants to visit
-    # Does not take Product.P0
-    def shoppingItem(self, product, usableWeights):
-        queue=[]
-        page = self.pages[product]
+    def productsExplorableByUser(self, product, usableWeights,user):
 
-        # Update z value
-        self.z[product.value]+=1
-        for p in buyableProducts():
-            usableWeights[p][page[0]] = 0
+        prob_matrix = (usableWeights.T * user.probabilityFutureBehaviour>0).T
+        active_nodes = np.zeros(5)
+        active_nodes[product] = 1
+        newly_active_nodes = active_nodes
+        t = 0
+        while t < 5 and np.sum(newly_active_nodes) > 0:
+            p = (prob_matrix.T * newly_active_nodes).T
+            prob_matrix = prob_matrix * (p != 0)
+            newly_active_nodes = (np.sum(p>0, axis=0) > 0) * (1 - active_nodes)
+            active_nodes = np.array(active_nodes + newly_active_nodes)
+            t += 1
 
-            # Add to the queue the secondary product webpage with a certain probability given by the graph
-        if np.random.rand() < usableWeights[page[0]][page[1]]:
-            queue.append(page[1])
-            # Add to the queue the tertiary product webpage with a certain probability given by the graph
-        if np.random.rand() < (usableWeights[page[0]][page[2]] * self.theta):
-            queue.append(page[2])
+        return active_nodes
 
-        queue=self.unique(queue)
+    def updateActivationProb_weights(self,weights):
+        self.activationProb_weights=[self.monteCarloRuns(self.numberOfRuns,p,weights) for p in range(5)]
 
-        return [queue,usableWeights]
+    def updateActivationProb_returnerWeights(self,returnerWeights):
+        self.activationProb_ReturnerWeights = [self.monteCarloRuns(self.numberOfRuns, p, returnerWeights[p]) for p in range(5)]
 
-    # Method to eliminates duplicates and keep the order preserved
-    def unique(self, sequence):
-        seen = set()
-        return [x for x in sequence if not (x in seen or seen.add(x))]
+    def matcher(self,M,M0,user,weights,returnerWeights):
 
+        w=np.nan_to_num([self.noDiscountCase(M0,user,returnerWeights) if p>4 else self.discountCase(M,user,p,self.productsExplorableByUser(p,weights,user)) for p in range(6)])
+        return np.random.choice(np.where(w == max(w))[0])
 
 
-    def matcher(self,weights,returnerWeights,M,M0,user):
-        w=np.zeros(6)
-        for p in list(Products):
-            if p is Products.P0:
-                # no discount case
-                w[p.value]=self.noDiscountCase(weights,M0,user)
-            else:
-                # in case we have a discount
-                w[p.value]=self.discountCase(returnerWeights[p],M,user,p)
-        w=np.nan_to_num(w)
-        return list(Products)[np.random.choice(np.where(w == max(w))[0])]
-
-
-    def noDiscountCase(self,weights,M0,user):
+    def noDiscountCase(self,M0,user,returnerWeights):
         reward=0
-        for p in buyableProducts():
-            r=self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(weights), user.probabilityFutureBehaviour)
-            if r>0:
+        for p in range(5):
+            if user.probabilityFutureBehaviour[p]==0:
+                r=0
+            else:
+                visitableNodes=self.productsExplorableByUser(p, returnerWeights[p], user)
+                r=np.sum(self.activationProb_weights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes)
+            if r!=0:
                 reward+= r * M0[p]
         return reward
 
-    def discountCase(self,returnerWeights,M,user,p):
-        reward= (self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour) - self.prices[p])
+    def discountCase(self,M,user,p,visitableNodes):
+        if M[p] == 0:
+            return np.nan_to_num(-np.inf)
+        if user.probabilityFutureBehaviour[p] == 0:
+            reward =  0
+        else:
+            reward  = np.sum((self.activationProb_ReturnerWeights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes))
+
+        reward=reward - self.prices[p]
         if reward!=0:
             reward=reward * M[p]
+
+
         return reward
 
     def matcherAggregatedReturningUsers(self,weights,returnerWeights,M,M0,user):
-        w=np.zeros(6)
-        for p in list(Products):
-            if p is Products.P0:
+        w = np.zeros(6)
+        for p in range(6):
+            if p > 4:
                 # no discount case
-                w[p.value]=self.noDiscountCase(weights,M0,user)
+                w[p] = self.noDiscountCase(weights, M0, user)
             else:
                 # in case we have a discount
-                w[p.value]=self.discountCase(returnerWeights,M,user,p)
-        w=np.nan_to_num(w)
-        return list(Products)[np.random.choice(np.where(w == max(w))[0])]
+                w[p] = self.discountCase(returnerWeights, M, user, p)
+        w = np.nan_to_num(w)
 
+        return np.random.choice(np.where(w == max(w))[0])

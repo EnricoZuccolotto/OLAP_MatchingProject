@@ -4,7 +4,7 @@
 import math
 from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
-from Step1_Environment.Products import Products
+
 # given a user and the page from which the user will start to navigate our website,return the reward
 # check if product is diff from P0
 # if he didn't buy anything don't call method finalizePurchase and don't assign the discount
@@ -16,96 +16,72 @@ import numpy as np
 if __name__ == '__main__':
     # TODO: defines parameters, two different graph weights
     # initialization of the prices and costs
-    prices = {Products.P1: 7,
-              Products.P2: 4,
-              Products.P3: 5,
-              Products.P4: 3,
-              Products.P5: 2}
-    costs = {Products.P1: 0,
-             Products.P2: 0,
-             Products.P3: 0,
-             Products.P4: 0,
-             Products.P5: 0}
+    prices = np.array([2,3,4,5,7])
+    costs = np.array([0,0,0,0,0])
 
     # initialization of the alpha values
-    alphas = {Products.P1: 0.2,
-              Products.P2: 0.2,
-              Products.P3: 0.2,
-              Products.P4: 0.2,
-              Products.P5: 0.1,
-              Products.P0: 0.1}
+    alphas = np.array([0.2,0.2,0.2,0.1,0.2,0.1])
+
+
 
     # initialization of the weights
+    w = np.array([[0.6, 0.5, 1, 0, 0],
+                  [0, 0, 0.6, 0, 0.4],
+                  [0, 0, 0, 0.5, 0.3],
+                  [0.4, 0, 0, 0, 0.2],
+                  [0.4, 0, 1, 0, 0]])
 
-    # initialization of the weights
-    weights = {Products.P1: {Products.P1: 0, Products.P2: 0.8, Products.P3: 0.7, Products.P4: 0.2, Products.P5: 0.3},
-         Products.P2: {Products.P1: 0.65, Products.P2: 0, Products.P3: 0.8, Products.P4: 0.4, Products.P5: 0.2},
-         Products.P3: {Products.P1: 0.7, Products.P2: 0.75, Products.P3: 0, Products.P4: 0.3, Products.P5: 0.4},
-         Products.P4: {Products.P1: 0.3, Products.P2: 0.4, Products.P3: 0.4, Products.P4: 0, Products.P5: 0.8},
-         Products.P5: {Products.P1: 0.4, Products.P2: 0.23, Products.P3: 0.16, Products.P4: 0.85, Products.P5: 0},
-         }
 
     # initialization of the matrix M
-    M = {Products.P1: {Products.P1: 0.7, Products.P2: 1, Products.P3: 0.3, Products.P4: 0.4, Products.P5: 0.2},
-         Products.P2: {Products.P1: 1, Products.P2: 0.5, Products.P3: 0.6, Products.P4: 0.4, Products.P5: 0.1},
-         Products.P3: {Products.P1: 0.8, Products.P2: 0.3, Products.P3: 0, Products.P4: 1, Products.P5: 0.9},
-         Products.P4: {Products.P1: 0.1, Products.P2: 0.1, Products.P3: 1, Products.P4: 0, Products.P5: 0.4},
-         Products.P5: {Products.P1: 0.6, Products.P2: 0.7, Products.P3: 0.8, Products.P4: 1, Products.P5: 0},
-         }
+    M = np.array([[0.4, 0.5, 1, 0, 0],
+                  [0, 0, 0.6, 0, 0.4],
+                  [0, 0, 0, 0.5, 0.3],
+                  [0.4, 0, 0, 0, 0.2],
+                  [0.4, 0, 1, 0, 0]])
     # initialization of the matrix M0
-    M0 = {Products.P1: {Products.P1: 0.1, Products.P2: 0.05, Products.P3: 0.2, Products.P4: 0.05, Products.P5: 0.05},
-          Products.P2: {Products.P1: 0.2, Products.P2: 0.25, Products.P3: 0.15, Products.P4: 0.05, Products.P5: 0.02},
-          Products.P3: {Products.P1: 0.03, Products.P2: 0.1, Products.P3: 0.07, Products.P4: 0.05, Products.P5: 0.05},
-          Products.P4: {Products.P1: 0.01, Products.P2: 0.01, Products.P3: 0, Products.P4: 0.15, Products.P5: 0.05},
-          Products.P5: {Products.P1: 0.0, Products.P2: 0.0, Products.P3: 0.05, Products.P4: 0.03, Products.P5: 0.02},
-          }
+    M0 = np.array([[0.1, 0.05, 0.1, 0, 0],
+                  [0, 0, 0.06, 0, 0.04],
+                  [0, 0, 0, 0.05, 0.03],
+                  [0.04, 0, 0, 0, 0.02],
+                  [0.04, 0, 0.01, 0, 0]])
     # initialization of the 5 fixed webpages
-    pages = {Products.P1: [Products.P1, Products.P2, Products.P3],
-             Products.P2: [Products.P2, Products.P3, Products.P5],
-             Products.P3: [Products.P3, Products.P4, Products.P5],
-             Products.P4: [Products.P4, Products.P5, Products.P1],
-             Products.P5: [Products.P5, Products.P1, Products.P3], }
+    pages = np.array([[0, 1, 1, 0, 0],
+                  [0, 0, 1, 0, 1],
+                  [0, 0, 0, 1, 1],
+                  [1, 0, 0, 0, 1],
+                  [1, 0, 1, 0, 0]])
 
     # initialization of the weight for each class defined by discounted product
-    returnerWeights = {}
-    returnerWeights[Products.P1] = {
-        Products.P1: {Products.P1:0, Products.P2: 0.8, Products.P3: 0.5, Products.P4: 1, Products.P5: 1},
-        Products.P2: {Products.P1: 1, Products.P2: 0, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-        Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
-        Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
-    }
-    returnerWeights[Products.P2] = {
-        Products.P1: {Products.P1: 0, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P2: {Products.P1: 1, Products.P2: 0, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-        Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
-        Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
-    }
-    returnerWeights[Products.P3] = {
-        Products.P1: {Products.P1: 0, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P2: {Products.P1: 1, Products.P2: 0, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-        Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
-        Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
-    }
-    returnerWeights[Products.P4] = {
-        Products.P1: {Products.P1: 0, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P2: {Products.P1: 1, Products.P2: 0, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-        Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
-        Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
-    }
-    returnerWeights[Products.P5] = {
-        Products.P1: {Products.P1: 0, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P2: {Products.P1: 1, Products.P2: 0, Products.P3: 1, Products.P4: 1, Products.P5: 1},
-        Products.P3: {Products.P1: 1, Products.P2: 1, Products.P3: 0, Products.P4: 1, Products.P5: 1},
-        Products.P4: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 0, Products.P5: 1},
-        Products.P5: {Products.P1: 1, Products.P2: 1, Products.P3: 1, Products.P4: 1, Products.P5: 0},
-    }
+    returnerWeights =np.array([[[0, 0.5, 1, 0, 0],
+                                [0, 0, 0.6, 0, 0.4],
+                                [0, 0, 0, 0.5, 0.3],
+                                 [0.4, 0, 0, 0, 0.2],
+                                 [0.4, 0, 1, 0, 0]],
+                              [[0, 0.5, 1, 0, 0],
+                               [0, 0, 0.6, 0, 0.4],
+                               [0, 0, 0, 0.5, 0.3],
+                               [0.4, 0, 0, 0, 0.2],
+                               [0.4, 0, 1, 0, 0]],
+                              [[0.7, 0.5, 1, 0, 0],
+                               [0, 0, 0.6, 0, 0.4],
+                               [0, 0, 0, 0.5, 0.3],
+                               [0.4, 0, 0, 0, 0.2],
+                               [0.4, 0, 1, 0, 0]],
+                              [[0, 0.5, 1, 0, 0],
+                               [0, 0, 0.6, 0, 0.4],
+                               [0, 0, 0, 0.5, 0.3],
+                               [0.4, 0, 0, 0, 0.2],
+                               [0.4, 0, 1, 0, 0]],
+                              [[0.6, 0.5, 1, 0, 0],
+                               [0, 0, 0.6, 0, 0.4],
+                               [0, 0, 0, 0.5, 0.3],
+                               [0.4, 0, 0, 0, 0.2],
+                               [0.4, 0, 1, 0, 0]]]
+                              )
     theta=0.8
     # initialization of the environment
-    env = Environment(alphas, weights, returnerWeights, M, M0, theta, prices, costs, pages, 3)
+
+    env = Environment(alphas, w*pages, returnerWeights*pages, M, M0, theta, prices, costs, 3)
     matchingBestDiscountCode=matchingBestDiscountCode(theta, pages, prices, costs,100)
 
     horizon=10
@@ -115,6 +91,7 @@ if __name__ == '__main__':
     # user that visited our website at time t
     # <list(users)>
     possibleReturnersAtTimeT=[]
+
     # TODO: difference between clairvoyant solution and our solution
     for t in range(horizon):
 
@@ -143,11 +120,14 @@ if __name__ == '__main__':
             else:
                 margin = env.userVisits(u,u.firstLandingItem)
                 possibleReturningUser.append(u)
+
+                print(u.episode)
             # if the user actually navigated our website
             # add it to possible returners and give the appropriate discount
             if margin>=0:
                 if margin >0:
-                    u.discountedItem=matchingBestDiscountCode.matcher(weights,returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem],u)
+                    u.discountedItem=matchingBestDiscountCode.matcher(w,returnerWeights,M[u.firstLandingItem],M0[u.firstLandingItem],u)
+                    print(u.discountedItem)
                     dailyMargins.append(margin)
 
         possibleReturnersAtTimeT.append(possibleReturningUser)

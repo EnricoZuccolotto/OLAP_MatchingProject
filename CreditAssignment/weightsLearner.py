@@ -1,15 +1,14 @@
 import copy
 
-from Step1_Environment.Products import Products
-from Step1_Environment.Products import buyableProducts
+
 import numpy as np
 class weightsLearner():
     def __init__(self):
-        self.n_nodes=len(buyableProducts())
+        self.n_nodes=5
         self.credits={}
         self.estimated_prob={}
         self.occur_v_active={}
-        for p in buyableProducts():
+        for p in range(5):
             self.estimated_prob[p]=np.ones(self.n_nodes) * 1.0 / (self.n_nodes - 1)
             self.credits[p] = np.zeros(self.n_nodes)
             self.occur_v_active[p] = np.zeros(self.n_nodes)
@@ -17,7 +16,7 @@ class weightsLearner():
     def estimate_prob(self,episode, product):
         episode=np.array(episode)
 
-        idx_w_active = np.argwhere(episode[:, product.value] == 1).reshape(-1)
+        idx_w_active = np.argwhere(episode[:, product] == 1).reshape(-1)
 
         if len(idx_w_active) > 0 and idx_w_active > 0:
             active_nodes_in_prev_step = episode[idx_w_active - 1, :].reshape(-1)
@@ -25,7 +24,7 @@ class weightsLearner():
             self.credits[product] += active_nodes_in_prev_step / np.sum(active_nodes_in_prev_step)
 
         for v in range(self.n_nodes):
-            if v != product.value:
+            if v != product:
                 idx_v_active = np.argwhere(episode[:, v] == 1).reshape(-1)
                 if len(idx_v_active) > 0 and (len(idx_w_active) == 0 or idx_v_active < idx_w_active):
                     self.occur_v_active[product][v] += 1
@@ -35,17 +34,9 @@ class weightsLearner():
 
 
     def updateEstimates(self,episode):
-        for p in buyableProducts():
+        for p in range(5):
             self.estimate_prob(episode,p)
 
     def returnWeights(self):
-        weights={}
-        for p in buyableProducts():
-            w={}
-            for p1 in buyableProducts():
-                w[p1]=self.estimated_prob[p1][p.value]
-            weights[p]=w
-        print(weights)
 
-
-        return copy.deepcopy(weights)
+        return copy.deepcopy(self.estimated_prob)
