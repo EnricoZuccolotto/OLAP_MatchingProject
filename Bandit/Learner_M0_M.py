@@ -6,13 +6,10 @@ from Bandit.TS_LearnerM0 import TS_LearnerM0
 # if ucb equal to 0 use the TS method
 class Learner_M0_M():
     def __init__(self,ucb):
-        self.learners=[]
-        for p in range(5):
-            if ucb:
-                self.learners.append(UCBLearner_M0(6))
-            else:
-                self.learners.append(TS_LearnerM0(6))
-        return
+        if ucb:
+            self.learners=[UCBLearner_M0(6) for _ in range(6)]
+        else:
+            self.learners=[TS_LearnerM0(6) for _ in range(6)]
 
     def update(self,firstLandingItem,discountedItem,landingProduct, reward):
         if discountedItem <5:

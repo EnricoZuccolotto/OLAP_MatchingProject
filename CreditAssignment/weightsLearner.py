@@ -5,13 +5,12 @@ import numpy as np
 class weightsLearner():
     def __init__(self):
         self.n_nodes=5
-        self.credits={}
-        self.estimated_prob={}
-        self.occur_v_active={}
-        for p in range(5):
-            self.estimated_prob[p]=np.ones(self.n_nodes) * 1.0 / (self.n_nodes - 1)
-            self.credits[p] = np.zeros(self.n_nodes)
-            self.occur_v_active[p] = np.zeros(self.n_nodes)
+        self.credits=np.zeros((self.n_nodes,self.n_nodes))
+
+        self.occur_v_active=np.zeros((self.n_nodes,self.n_nodes))
+
+        self.estimated_prob=np.array([np.ones(self.n_nodes) * 1.0 / (self.n_nodes - 1)]*5)
+
 
     def estimate_prob(self,episode, product):
         episode=np.array(episode)

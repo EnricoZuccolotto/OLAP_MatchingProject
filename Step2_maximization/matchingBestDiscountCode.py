@@ -77,6 +77,7 @@ class matchingBestDiscountCode():
     def matcher(self,M,M0,user,weights,returnerWeights):
 
         w=np.nan_to_num([self.noDiscountCase(M0,user,returnerWeights) if p>4 else self.discountCase(M,user,p,self.productsExplorableByUser(p,weights,user)) for p in range(6)])
+
         return np.random.choice(np.where(w == max(w))[0])
 
 
@@ -93,18 +94,12 @@ class matchingBestDiscountCode():
         return reward
 
     def discountCase(self,M,user,p,visitableNodes):
-        if M[p] == 0:
-            return np.nan_to_num(-np.inf)
         if user.probabilityFutureBehaviour[p] == 0:
-            reward =  0
+            reward = 0
         else:
-            reward  = np.sum((self.activationProb_ReturnerWeights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes))
-
-        reward=reward - self.prices[p]
+            reward  = np.sum((self.activationProb_ReturnerWeights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes)) - self.prices[p]*user.probabilityFutureBehaviour[p]
         if reward!=0:
             reward=reward * M[p]
-
-
         return reward
 
     def matcherAggregatedReturningUsers(self,weights,returnerWeights,M,M0,user):

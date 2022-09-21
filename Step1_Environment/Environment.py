@@ -24,8 +24,8 @@ class Environment():
         assert math.fsum(list(alphas)) == 1
 
         assert 6 == len(list(alphas))
-        for p in range(5):
-            assert math.fsum(M0[p]) <= 1
+        # for p in range(5):
+        #     assert math.fsum(M0[p]) <= 1
 
     def generateRandomUser(self,n):
         l=[]
