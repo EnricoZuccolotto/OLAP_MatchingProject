@@ -30,10 +30,10 @@ class CD_CUSUM_UCB(UCBLearner_M0):
 
         self.rewards_per_arm[pulled_arm].append(reward)
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
-        total_valid_samples = sum([len(x) for x in self.rewards_per_arm])+len(self.rewards_per_product[0])
+        total_valid_samples = sum([len(x) for x in self.rewards_per_arm])
         for a in range(self.number_arms-1):
             n = len(self.rewards_per_arm[a])
-            self.widths[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 0 else np.inf
+            self.widths[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
 
     def pull_arm_M0(self):
         if np.random.binomial(1, 1 - self.aplha):
@@ -58,8 +58,8 @@ class CD_CUSUM_UCB(UCBLearner_M0):
 
             self.rewards_per_product[idx].append(r)
 
-        total_valid_samples = len(self.rewards_per_product[0])+sum([len(x) for x in self.rewards_per_arm])
+        total_valid_samples = sum([len(x) for x in self.rewards_per_arm])
         for a in range(self.number_arms-1):
             n = len(self.rewards_per_product[a])
             self.M0[a] = np.mean(self.rewards_per_product[a])
-            self.M0_width[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 0 else np.inf
+            self.M0_width[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
