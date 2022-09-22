@@ -187,7 +187,7 @@ if __name__ == '__main__':
                         if margin >0:
                             u.discountedItem = matchingBestDiscountCode.matcher(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u,
-                                                                                weightsLearn.returnWeights(),returnerWeights * pages,)
+                                                                                weightsLearn.returnWeights()*pages,returnerWeights * pages,)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))

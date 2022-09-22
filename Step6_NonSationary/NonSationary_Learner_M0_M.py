@@ -10,3 +10,20 @@ class NonStationary_Learner_M_M0(Learner_M0_M):
         self.learners=[CD_CUSUM_UCB(6) for _ in range(5)]
         return
 
+
+from Step6_NonSationary.slidingWindow import slidingWindow
+from Bandit.Learner_M0_M import Learner_M0_M
+
+
+# if ucb equal to 1 use the UCB method to compute probabilities
+# if ucb equal to 0 use the TS method
+class NonStationary_Sliding_Learner_M_M0(Learner_M0_M):
+    def __init__(self, window):
+        super().__init__(1)
+        self.learners=[slidingWindow(6,window) for _ in range(5)]
+        return
+
+    def time(self):
+        for p in range(5):
+            self.learners[p].time()
+

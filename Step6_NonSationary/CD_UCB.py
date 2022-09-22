@@ -22,7 +22,7 @@ class CD_CUSUM_UCB(UCBLearner_M0):
             return costs_random
 
     def update(self, pulled_arm, reward):
-
+        self.t+=1
         if self.change_detection[pulled_arm].update(reward):
             self.detections[pulled_arm].append(self.t)
             self.rewards_per_arm[pulled_arm] = []
@@ -44,7 +44,6 @@ class CD_CUSUM_UCB(UCBLearner_M0):
             return costs_random
 
     def updateM0(self, pulled_arm,landingProduct, reward):
-        self.t += 1
         self.update(pulled_arm, reward)
         for idx in range(self.number_arms-1):
             if landingProduct == idx:

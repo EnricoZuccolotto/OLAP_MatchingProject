@@ -186,7 +186,7 @@ if __name__ == '__main__':
                         if margin >0:
                             u.discountedItem = matchingBestDiscountCode.matcherAggregated(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                weightsLearn.returnWeights())
+                                                                                weightsLearn.returnWeights()*pages)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
@@ -202,6 +202,7 @@ if __name__ == '__main__':
         cumRegret = np.cumsum(instantRegret)
         printProb()
         regrets_per_exp.append(cumRegret)
+        rewards_per_exp.append(instantReward)
         mean = np.mean(regrets_per_exp, axis=0)
         std = np.std(regrets_per_exp, axis=0) / np.sqrt(e+1)
         plt.figure(0)

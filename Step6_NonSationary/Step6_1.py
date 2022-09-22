@@ -6,6 +6,7 @@ import math
 import gc
 from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step6_NonSationary.NonStationaryEnv import NonStationaryEnv
+from Step6_NonSationary.NonSationary_Learner_M0_M import NonStationary_Sliding_Learner_M_M0
 from Step6_NonSationary.NonSationary_Learner_M0_M import NonStationary_Learner_M_M0
 import matplotlib.pyplot as plt
 # given a user and the page from which the user will start to navigate our website,return the reward
@@ -18,19 +19,19 @@ import numpy as np
 def printProb():
     if ucb:
         for p in range(5):
-            print(learner.learners[p].means+learner.learners[p].widths)
-            print(learner.learners[p].M0+learner.learners[p].M0_width)
+            print(slidingLearner.learners[p].means + slidingLearner.learners[p].widths)
+            print(slidingLearner.learners[p].M0 + slidingLearner.learners[p].M0_width)
 
     else:
         for p in range(5):
             print(p)
             for i in range(5):
-                prob=learner.learners[p].beta[i][0]/(learner.learners[p].beta[i][0]+learner.learners[p].beta[i][1])
+                prob= slidingLearner.learners[p].beta[i][0] / (slidingLearner.learners[p].beta[i][0] + slidingLearner.learners[p].beta[i][1])
                 print(prob)
             print("M0")
             for i in range(5):
-                prob = learner.learners[p].M0_beta[i][0] / (
-                            learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
+                prob = slidingLearner.learners[p].M0_beta[i][0] / (
+                        slidingLearner.learners[p].M0_beta[i][0] + slidingLearner.learners[p].M0_beta[i][1])
                 print(prob)
 def returningVisit(user1):
     landingProduct = env.returningLandingProduct(user1)
@@ -38,7 +39,7 @@ def returningVisit(user1):
         reward=1
     else:
         reward=0
-    learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
+    slidingLearner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)
     return m
 if __name__ == '__main__':
@@ -138,14 +139,16 @@ if __name__ == '__main__':
     for e in range(n_experiment):
         print('exp ' + str(e))
         env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 3,horizon)
-        learner = NonStationary_Learner_M_M0()
+        slidingLearner = NonStationary_Sliding_Learner_M_M0(2 * int(np.sqrt(horizon)))
+        CDLearner=NonStationary_Learner_M_M0()
+
         possibleReturnersAtTimeT = []
         instantRegret = []
 
         instantReward=[]
 
         for t in range(horizon):
-            print(t)
+            print('time:'+str(t))
             dailyMargins = [0]
             dailyOptimalMargins = [0]
             possibleReturningUser = []
@@ -195,12 +198,13 @@ if __name__ == '__main__':
                 # add it to possible returners and give the appropriate discount
                     if margin>=0:
                         if margin >0:
-                            u.discountedItem = matchingBestDiscountCode.matcher(learner.pull_arm(u.firstLandingItem),
-                                                                        learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
+                            u.discountedItem = matchingBestDiscountCode.matcher(slidingLearner.pull_arm(u.firstLandingItem),
+                                                                                slidingLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
                                                                                 returnerWeights * pages)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             env.updateT()
+            slidingLearner.time()
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
             instantReward.append(math.fsum(dailyMargins))
             del userVisitingToday,margin,dailyOptimalMargins,dailyMargins
@@ -236,7 +240,7 @@ if __name__ == '__main__':
         plt.savefig('reward' + str(e) + '.png')
         plt.show()
 
-        del instantRegret, possibleReturnersAtTimeT, learner, mean, std, env
+        del instantRegret, possibleReturnersAtTimeT, slidingLearner, mean, std, env
         gc.collect()
 
 
