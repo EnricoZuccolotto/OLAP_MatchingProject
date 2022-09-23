@@ -210,8 +210,6 @@ if __name__ == '__main__':
             del userVisitingToday,margin,dailyOptimalMargins,dailyMargins
             if t - delay >= 0:
                 del returnerUsers
-            if t==180:
-                printProb()
             gc.collect()
 
 

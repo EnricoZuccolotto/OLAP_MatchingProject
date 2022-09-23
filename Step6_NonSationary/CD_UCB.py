@@ -62,3 +62,7 @@ class CD_CUSUM_UCB(UCBLearner_M0):
             n = len(self.rewards_per_product[a])
             self.M0[a] = np.mean(self.rewards_per_product[a])
             self.M0_width[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
+
+
+    def time(self):
+        return
