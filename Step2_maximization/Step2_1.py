@@ -1,26 +1,14 @@
-# https://www.jetbrains.com/pycharm/
-# Log in with your polimi email to have free access otherwise you need to pay
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
-import copy
-import math
+
 import gc
 from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step2_maximization.matcher import matchingBestDiscountCode as matcher
 from Step1_Environment.Environment import *
-from Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
-# given a user and the page from which the user will start to navigate our website,return the reward
-# check if product is diff from P0
-# if he didn't buy anything don't call method finalizePurchase and don't assign the discount
-# add the user to the possible returner list
-# set user.returner=True
 import numpy as np
 
 
 def returningVisit(user1):
     landingProduct = env.returningLandingProduct(user1)
-    reward = landingProduct<5*1
-    learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)
     return m
 if __name__ == '__main__':
@@ -108,7 +96,6 @@ if __name__ == '__main__':
     for e in range(n_experiment):
         print('exp ' + str(e))
         env = Environment(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 3)
-        learner = Learner_M0_M(ucb)
         possibleReturnersAtTimeT = []
         instantRegret = []
         exactMatch=[]
@@ -174,7 +161,6 @@ if __name__ == '__main__':
 
 
         cumRegret = np.cumsum(instantRegret)
-        printProb()
         rewards_per_exp.append(cumRegret)
         mean = np.mean(rewards_per_exp, axis=0)
         std = np.std(rewards_per_exp, axis=0) / np.sqrt(e+1)
@@ -191,7 +177,7 @@ if __name__ == '__main__':
         plt.savefig('ratio' + str(e) + '.png')
         plt.show()
 
-        del instantRegret, possibleReturnersAtTimeT, learner, mean, std, env
+        del instantRegret, possibleReturnersAtTimeT, mean, std, env
         gc.collect()
 
 

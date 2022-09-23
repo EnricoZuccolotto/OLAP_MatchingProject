@@ -1,4 +1,4 @@
-from Bandit.UCBLearner_M0 import UCBLearner_M0
+from Step3_M0_M_Unknown.Bandit.UCBLearner_M0 import UCBLearner_M0
 import numpy as np
 from CUSUM import CUSUM
 

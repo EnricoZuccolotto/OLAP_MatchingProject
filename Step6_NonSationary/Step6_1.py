@@ -1,38 +1,14 @@
-# https://www.jetbrains.com/pycharm/
-# Log in with your polimi email to have free access otherwise you need to pay
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
 import copy
 import math
 import gc
-from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
-from Step6_NonSationary.NonStationaryEnv import NonStationaryEnv
-from Step6_NonSationary.NonSationary_Learner_M0_M import NonStationary_Sliding_Learner_M_M0
-from Step6_NonSationary.NonSationary_Learner_M0_M import NonStationary_Learner_M_M0
+from Step2_maximization.matcher import matchingBestDiscountCode
+from Step6_NonSationary.NonStationaryBandit.NonStationaryEnv import NonStationaryEnv
+from Step6_NonSationary.NonStationaryBandit.NonSationary_Learner_M0_M import NonStationary_Sliding_Learner_M_M0
+from Step6_NonSationary.NonStationaryBandit.NonSationary_Learner_M0_M import NonStationary_Learner_M_M0
 import matplotlib.pyplot as plt
-# given a user and the page from which the user will start to navigate our website,return the reward
-# check if product is diff from P0
-# if he didn't buy anything don't call method finalizePurchase and don't assign the discount
-# add the user to the possible returner list
-# set user.returner=True
 import numpy as np
 
-def printProb():
-    if ucb:
-        for p in range(5):
-            print(slidingLearner.learners[p].means + slidingLearner.learners[p].widths)
-            print(slidingLearner.learners[p].M0 + slidingLearner.learners[p].M0_width)
-
-    else:
-        for p in range(5):
-            print(p)
-            for i in range(5):
-                prob= slidingLearner.learners[p].beta[i][0] / (slidingLearner.learners[p].beta[i][0] + slidingLearner.learners[p].beta[i][1])
-                print(prob)
-            print("M0")
-            for i in range(5):
-                prob = slidingLearner.learners[p].M0_beta[i][0] / (
-                        slidingLearner.learners[p].M0_beta[i][0] + slidingLearner.learners[p].M0_beta[i][1])
-                print(prob)
 def returningVisit(user1):
     landingProduct = env.returningLandingProduct(user1)
     if landingProduct<5:
@@ -60,17 +36,29 @@ if __name__ == '__main__':
                   [0.73, 0.55, 0.65, 0.57, 0.59]])
 
     # initialization of the matrix M
-    M = np.array([[0.3, 0.4, 0.38, 0.45, 0.2],
+    M = np.array([[[0.3, 0.4, 0.38, 0.45, 0.2],
                   [0.2, 0.5, 0.34, 0.4, 0.1],
                   [0.25, 0.31, 0.15, 0.28, 0.44],
                   [0.19, 0.28, 0.42, 0.17, 0.35],
-                  [0.35, 0.25, 0.29, 0.5, 0.47]])
+                  [0.35, 0.25, 0.29, 0.5, 0.47]],
+                 [[0.03, 0.04, 0.038, 0.045, 0.02],
+                  [0.9, 0.9, 0.94, 0.9, 0.90],
+                  [0.025, 0.031, 0.15, 0.28, 0.44],
+                  [0.019, 0.028, 0.42, 0.017, 0.35],
+                  [0.035, 0.025, 0.29, 0.5, 0.47]]]
+                 )
     # initialization of the matrix M0
-    M0 = np.array([[0.01, 0.05, 0.02, 0.03, 0.025],
+    M0 = np.array([[[0.01, 0.05, 0.02, 0.03, 0.025],
                    [0.02, 0.025, 0.015, 0.05, 0.02],
                    [0.03, 0.01, 0.04, 0.05, 0.02],
                    [0.01, 0.017, 0.02, 0.015, 0.05],
-                   [0.03, 0.02, 0.05, 0.035, 0.01]])
+                   [0.03, 0.02, 0.05, 0.035, 0.01]],
+                  [[0.01, 0.05, 0.02, 0.003, 0.025],
+                   [0.02, 0.025, 0.015, 0.05, 0.02],
+                   [0.03, 0.001, 0.04, 0.005, 0.002],
+                   [0.01, 0.0017, 0.002, 0.015, 0.005],
+                   [0.003, 0.02, 0.05, 0.0035, 0.01]]]
+                  )
 
     # initialization of the weight for each class defined by discounted product
     returnerWeights = np.array([[[0, 0.65, 0.5, 0.4, 0.25],
@@ -117,14 +105,14 @@ if __name__ == '__main__':
     regrets_per_exp = []
     rewards_per_exp = []
     numberOfDailyVisit =150
-    matchingBestDiscountCode.updateActivationProb_weights(w * pages)
-    matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
+    # matchingBestDiscountCode.updateActivationProb_weights(w * pages)
+    # matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
 
     # user that visited our website at time t
     # <list(users)>
     for e in range(n_experiment):
         print('exp ' + str(e))
-        env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 3,horizon)
+        env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 10,horizon)
         slidingLearner = NonStationary_Sliding_Learner_M_M0(2 * int(np.sqrt(horizon)))
         CDLearner=NonStationary_Learner_M_M0()
 
@@ -166,7 +154,8 @@ if __name__ == '__main__':
 
                     if int(oldDiscountedItem)!=int(optimalDiscountedItem):
                         u.discountedItem = optimalDiscountedItem
-                        optimalMargin = returningVisit(u)
+                        landingProduct = env.returningLandingProduct(u)
+                        optimalMargin = env.userVisits(u, landingProduct)
                         dailyOptimalMargins.append(optimalMargin)
                     else:
 
@@ -196,7 +185,6 @@ if __name__ == '__main__':
 
 
         cumRegret = np.cumsum(instantRegret)
-        printProb()
         rewards_per_exp.append(instantReward)
         regrets_per_exp.append(cumRegret)
         mean = np.mean(regrets_per_exp, axis=0)

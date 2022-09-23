@@ -6,8 +6,8 @@ import math
 import gc
 from Step2_maximization.matcher import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
-from CreditAssignment.weightsLearner import weightsLearner
-from Bandit.Learner_M0_M import Learner_M0_M
+from Step4_WeightsUnknown.weightsLearner import weightsLearner
+from Step3_M0_M_Unknown.Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
 # given a user and the page from which the user will start to navigate our website,return the reward
 # check if product is diff from P0
@@ -162,7 +162,8 @@ if __name__ == '__main__':
 
                     if int(oldDiscountedItem)!=int(optimalDiscountedItem):
                         u.discountedItem = optimalDiscountedItem
-                        optimalMargin = returningVisit(u)
+                        landingProduct = env.returningLandingProduct(u)
+                        optimalMargin = env.userVisits(u, landingProduct)
                         dailyOptimalMargins.append(optimalMargin)
                     else:
 

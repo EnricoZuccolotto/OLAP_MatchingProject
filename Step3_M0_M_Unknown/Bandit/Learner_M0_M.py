@@ -1,6 +1,6 @@
 
-from Bandit.UCBLearner_M0 import UCBLearner_M0
-from Bandit.TS_LearnerM0 import TS_LearnerM0
+from Step3_M0_M_Unknown.Bandit.UCBLearner_M0 import UCBLearner_M0
+from Step3_M0_M_Unknown.Bandit.TS_LearnerM0 import TS_LearnerM0
 
 # if ucb equal to 1 use the UCB method to compute probabilities
 # if ucb equal to 0 use the TS method

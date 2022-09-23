@@ -1,18 +1,11 @@
-# https://www.jetbrains.com/pycharm/
-# Log in with your polimi email to have free access otherwise you need to pay
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
 import copy
 import math
 import gc
-from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
+from Step2_maximization.matcher import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
 from Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
-# given a user and the page from which the user will start to navigate our website,return the reward
-# check if product is diff from P0
-# if he didn't buy anything don't call method finalizePurchase and don't assign the discount
-# add the user to the possible returner list
-# set user.returner=True
 import numpy as np
 
 def printProb():
@@ -113,8 +106,8 @@ if __name__ == '__main__':
     regrets_per_exp = []
     rewards_per_exp = []
     numberOfDailyVisit =150
-    matchingBestDiscountCode.updateActivationProb_weights(w * pages)
-    matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
+    # matchingBestDiscountCode.updateActivationProb_weights(w * pages)
+    # matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
 
     # user that visited our website at time t
     # <list(users)>
@@ -157,7 +150,8 @@ if __name__ == '__main__':
 
                     if int(oldDiscountedItem)!=int(optimalDiscountedItem):
                         u.discountedItem = optimalDiscountedItem
-                        optimalMargin = returningVisit(u)
+                        landingProduct = env.returningLandingProduct(u)
+                        optimalMargin= env.userVisits(u, landingProduct)
                         dailyOptimalMargins.append(optimalMargin)
                     else:
                         dailyOptimalMargins.append(margin)

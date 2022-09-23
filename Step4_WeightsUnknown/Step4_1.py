@@ -1,19 +1,12 @@
-# https://www.jetbrains.com/pycharm/
-# Log in with your polimi email to have free access otherwise you need to pay
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
 import copy
 import math
 import gc
 from Step2_maximization.matcher import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
-from CreditAssignment.weightsLearner import weightsLearner
-from Bandit.Learner_M0_M import Learner_M0_M
+from Step4_WeightsUnknown.weightsLearner import weightsLearner
+from Step3_M0_M_Unknown.Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
-# given a user and the page from which the user will start to navigate our website,return the reward
-# check if product is diff from P0
-# if he didn't buy anything don't call method finalizePurchase and don't assign the discount
-# add the user to the possible returner list
-# set user.returner=True
 import numpy as np
 
 def printProb():
@@ -162,7 +155,8 @@ if __name__ == '__main__':
 
                     if int(oldDiscountedItem)!=int(optimalDiscountedItem):
                         u.discountedItem = optimalDiscountedItem
-                        optimalMargin = returningVisit(u)
+                        landingProduct = env.returningLandingProduct(u)
+                        optimalMargin = env.userVisits(u, landingProduct)
                         dailyOptimalMargins.append(optimalMargin)
                     else:
 
@@ -202,6 +196,7 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('fooo'+str(e)+'.png')
+        plt.legend()
         plt.show()
 
         plt.figure(1)
@@ -212,6 +207,7 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('reward' + str(e) + '.png')
+        plt.legend()
         plt.show()
 
         del instantRegret, possibleReturnersAtTimeT, learner, mean, std, env

@@ -1,5 +1,5 @@
 
-from Bandit.TS_learner import *
+from Step3_M0_M_Unknown.Bandit.TS_learner import *
 
 class TS_LearnerM0(TS_learner):
     def __init__(self, n_arms):
