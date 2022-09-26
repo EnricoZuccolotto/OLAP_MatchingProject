@@ -38,4 +38,4 @@ class weightsLearner():
 
     def returnWeights(self):
 
-        return copy.deepcopy(self.estimated_prob)
+        return self.estimated_prob.T

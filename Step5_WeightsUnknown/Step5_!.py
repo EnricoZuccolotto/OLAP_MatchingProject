@@ -9,11 +9,6 @@ from Step1_Environment.Environment import Environment
 from Step4_WeightsUnknown.weightsLearner import weightsLearner
 from Step3_M0_M_Unknown.Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
-# given a user and the page from which the user will start to navigate our website,return the reward
-# check if product is diff from P0
-# if he didn't buy anything don't call method finalizePurchase and don't assign the discount
-# add the user to the possible returner list
-# set user.returner=True
 import numpy as np
 
 def printProb():
@@ -150,7 +145,7 @@ if __name__ == '__main__':
 
                 if u.returner:
                     optimalDiscountedItem = matchingBestDiscountCode.matcher( M[u.firstLandingItem],
-                                                                                M0[u.firstLandingItem],u, w * pages,
+                                                                         M0[u.firstLandingItem],u, w * pages,
                                                                         returnerWeights * pages)
 
                     oldDiscountedItem=int(copy.deepcopy(u.discountedItem))
@@ -179,9 +174,10 @@ if __name__ == '__main__':
                         possibleReturningUser.append(u)
                         u.discountedItem = matchingBestDiscountCode.matcher(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u,
-                                                                                weightsLearn.returnWeights()*pages,returnerWeights * pages,)
+                                                                         weightsLearn.returnWeights()*(pages>0),returnerWeights * pages)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
+
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
             instantReward.append(math.fsum(dailyMargins))
             del userVisitingToday,margin,dailyMargins,dailyOptimalMargins

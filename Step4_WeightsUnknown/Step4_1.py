@@ -171,7 +171,7 @@ if __name__ == '__main__':
                         possibleReturningUser.append(u)
                         u.discountedItem = matchingBestDiscountCode.matcherAggregated(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                weightsLearn.returnWeights()*pages)
+                                                                                weightsLearn.returnWeights()*(pages>0))
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))

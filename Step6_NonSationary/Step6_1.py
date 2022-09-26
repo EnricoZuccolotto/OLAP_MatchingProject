@@ -4,7 +4,7 @@ import math
 import gc
 from Step2_maximization.matcher import matchingBestDiscountCode
 from Step6_NonSationary.NonStationaryBandit.NonStationaryEnv import NonStationaryEnv
-from Step6_NonSationary.NonStationaryBandit.NonSationary_Learner_M0_M import NonStationary_Sliding_Learner_M_M0
+
 from Step6_NonSationary.NonStationaryBandit.NonSationary_Learner_M0_M import NonStationary_Learner_M_M0
 import matplotlib.pyplot as plt
 import numpy as np
@@ -113,8 +113,8 @@ if __name__ == '__main__':
     for e in range(n_experiment):
         print('exp ' + str(e))
         env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 10,horizon)
-        slidingLearner = NonStationary_Sliding_Learner_M_M0(2 * int(np.sqrt(horizon)))
-        CDLearner=NonStationary_Learner_M_M0()
+        slidingLearner = NonStationary_Learner_M_M0(2 * int(np.sqrt(horizon)))
+
 
         possibleReturnersAtTimeT = []
         instantRegret = []
@@ -148,6 +148,7 @@ if __name__ == '__main__':
 
                     oldDiscountedItem=int(copy.deepcopy(u.discountedItem))
                     margin = returningVisit(u)
+
                     dailyMargins.append(margin)
 
 
