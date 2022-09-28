@@ -14,7 +14,7 @@ class matchingBestDiscountCode():
     # product->fist product the user will visit
     # weight associated to user
     # n number of repetitions
-    def monteCarloRuns(self, n, product, weights, productsSeen):
+    def monteCarloRuns(self, n, product, weights, productsSeen,estimatedQuantities):
         self.z = np.zeros(5)
         if productsSeen[product]==0:
             return 0
@@ -28,7 +28,7 @@ class matchingBestDiscountCode():
 
 
 
-        rew= np.sum(self.z / n * (self.prices-self.costs))
+        rew= np.sum(self.z / n * (self.prices-self.costs)*estimatedQuantities)
         return rew
 
     def simulateEpisode(self, product, usableWeights):
@@ -53,52 +53,52 @@ class matchingBestDiscountCode():
 
 
 
-    def matcher(self,M,M0,user,weights,returnerWeights):
+    def matcher(self,M,M0,user,weights,returnerWeights,estimatedQuantities):
 
         w=np.zeros(6)
         for p in range(6):
             if p>4:
                 # no discount case
-                w[p]=self.noDiscountCase(weights,M0,user)
+                w[p]=self.noDiscountCase(weights,M0,user,estimatedQuantities)
             else:
                 # in case we have a discount
-                w[p]=self.discountCase(returnerWeights[p],M,user,p)
+                w[p]=self.discountCase(returnerWeights[p],M,user,p,estimatedQuantities)
         w=np.nan_to_num(w)
 
         return np.random.choice(np.where(w == max(w))[0])
 
 
-    def noDiscountCase(self,weights,M0,user):
+    def noDiscountCase(self,weights,M0,user,estimatedQuantities):
         reward=0
         for p in range(5):
             if user.probabilityFutureBehaviour[p]==0:
                 r=0
             else:
-                r=self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(weights), user.probabilityFutureBehaviour)
+                r=self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(weights), user.probabilityFutureBehaviour,estimatedQuantities)
             if r>0:
                 reward+= r * M0[p]
         return reward
 
-    def discountCase(self,returnerWeights,M,user,p):
+    def discountCase(self,returnerWeights,M,user,p,estimatedQuantities):
         if user.probabilityFutureBehaviour[p]==0:
             reward=0
         else:
-            reward= self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour) -self.prices[p]*user.probabilityFutureBehaviour[p]
+            reward= self.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(returnerWeights), user.probabilityFutureBehaviour,estimatedQuantities) -self.prices[p]*user.probabilityFutureBehaviour[p]
         if reward!=0:
             reward=reward * M[p]
 
         return reward
 
 
-    def matcherAggregated(self,M,M0,user,weights,returnerWeights):
+    def matcherAggregated(self,M,M0,user,weights,returnerWeights,estimatedQuantities):
         w=np.zeros(6)
         for p in range(6):
             if p>4:
                 # no discount case
-                w[p]=self.noDiscountCase(weights,M0,user)
+                w[p]=self.noDiscountCase(weights,M0,user,estimatedQuantities)
             else:
                 # in case we have a discount
-                w[p]=self.discountCase(returnerWeights,M,user,p)
+                w[p]=self.discountCase(returnerWeights,M,user,p,estimatedQuantities)
         w=np.nan_to_num(w)
         return np.random.choice(np.where(w == max(w))[0])
 

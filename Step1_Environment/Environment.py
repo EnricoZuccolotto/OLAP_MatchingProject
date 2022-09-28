@@ -5,7 +5,7 @@ from Step1_Environment.User import User
 import copy
 
 class Environment():
-    def __init__(self, alphas, weights, returnerWeights, M, M0, prices, costs, maxQuantity):
+    def __init__(self, alphas, weights, returnerWeights, M, M0, prices, costs, quantities,quantities_std):
         self.alphas = alphas
         self.weights = weights
         self.returnerWeights = returnerWeights
@@ -13,9 +13,11 @@ class Environment():
         self.M0 = M0
         self.prices = prices
         self.costs = costs
+        # used to compute the avg quantities
+        self.itemsBought=[[] for _ in range(5)]
 
-        self.maxQuantity = maxQuantity
-
+        self.quantities=quantities
+        self.quantities_std=quantities_std
 
 
         # TODO:some other assertions
@@ -82,12 +84,14 @@ class Environment():
     def shoppingItem(self, product, user):
         # Buy the quantity of products and set to 0 the possibility to return to this webpage
         if self.prices[product] < user.reservationPrice[product]:
-            quantity = max(1, int(np.random.normal(self.maxQuantity, 1)))
+            quantity = max(1, int(np.random.normal(self.quantities[product], self.quantities_std[product])))
+
             user.probabilityFutureBehaviour[product] = 1
         else:
             quantity = 0
             user.probabilityFutureBehaviour[product] = 0
         user.cart[product]=quantity
+        self.itemsBought[product].append(quantity)
 
         return quantity>0
 

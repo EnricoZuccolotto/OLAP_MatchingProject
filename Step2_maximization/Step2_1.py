@@ -77,6 +77,9 @@ if __name__ == '__main__':
                       [0, 0, 0, 1, theta],
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
+
+    quantities=[1,2,3,4,5]
+    quantities_std=[1,2,1,1,1]
     # initialization of the environment
 
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
@@ -95,7 +98,7 @@ if __name__ == '__main__':
     # <list(users)>
     for e in range(n_experiment):
         print('exp ' + str(e))
-        env = Environment(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 3)
+        env = Environment(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs,quantities,quantities_std)
         possibleReturnersAtTimeT = []
         instantRegret = []
         exactMatch=[]
@@ -122,7 +125,7 @@ if __name__ == '__main__':
             for u in userVisitingToday:
 
                 if u.returner:
-                    optimalDiscountedItem = matcher.matcher( M[u.firstLandingItem],M0[u.firstLandingItem],u, w * pages,returnerWeights * pages)
+                    optimalDiscountedItem = matcher.matcher( M[u.firstLandingItem],M0[u.firstLandingItem],u, w * pages,returnerWeights * pages,quantities)
                     tot+=1
                     oldDiscountedItem=int(copy.deepcopy(u.discountedItem))
                     margin = returningVisit(u)
@@ -145,15 +148,16 @@ if __name__ == '__main__':
                     margin = env.userVisits(u,u.firstLandingItem)
                     if margin >0:
                         possibleReturningUser.append(u)
+                        means=[np.mean(env.itemsBought[i]) if len(env.itemsBought[i])>0 else 0 for i in range(5)]
                         u.discountedItem = matchingBestDiscountCode.matcher(M[u.firstLandingItem],
                                                                                 M0[u.firstLandingItem], u, w * pages,
-                                                                                returnerWeights * pages)
+                                                                                returnerWeights * pages,means)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
             if tot>0:
                 exactMatch.append(count/tot)
-            del userVisitingToday,margin,dailyMargins,dailyOptimalMargins
+            del userVisitingToday,margin,dailyMargins,dailyOptimalMargins,means
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()

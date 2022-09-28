@@ -87,9 +87,12 @@ if __name__ == '__main__':
                       [0, 0, 0, 1, theta],
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
+
+    quantities = [1, 2, 3, 4, 5]
+    quantities_std = [1, 2, 1, 1, 1]
     # initialization of the environment
 
-    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
+    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
     ucb = 1
 
     n_experiment = 10
@@ -107,7 +110,7 @@ if __name__ == '__main__':
     # <list(users)>
     for e in range(n_experiment):
         print('exp ' + str(e))
-        env = Environment(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 15)
+        env = Environment(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs,quantities,quantities_std)
         TS_learner = Learner_M0_M(0)
         UCB_learner = Learner_M0_M(1)
 
@@ -145,7 +148,7 @@ if __name__ == '__main__':
 
                     optimalDiscountedItem = matchingBestDiscountCode.matcher( M[u.firstLandingItem],
                                                                                 M0[u.firstLandingItem],u, w * pages,
-                                                                        returnerWeights * pages)
+                                                                        returnerWeights * pages,quantities)
 
                     oldDiscountedItemSliding=int(copy.deepcopy(u.discountedItem[0]))
                     oldDiscountedItemCD = int(copy.deepcopy(u.discountedItem[1]))
@@ -192,18 +195,19 @@ if __name__ == '__main__':
                     margin = env.userVisits(u,u.firstLandingItem)
                     if margin >0:
                         possibleReturningUser.append(u)
+                        means = [np.mean(env.itemsBought[i]) if len(env.itemsBought[i]) > 0 else 0 for i in range(5)]
                         u.discountedItem =[matchingBestDiscountCode.matcher(TS_learner.pull_arm(u.firstLandingItem),
                                                                             TS_learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                            returnerWeights * pages),matchingBestDiscountCode.matcher(UCB_learner.pull_arm(u.firstLandingItem),
+                                                                            returnerWeights * pages,means),matchingBestDiscountCode.matcher(UCB_learner.pull_arm(u.firstLandingItem),
                                                                                                                                       UCB_learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                                                                      returnerWeights * pages)]
+                                                                                                                                      returnerWeights * pages,means)]
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegretTS.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMarginsTS))
             instantRewardTS.append(math.fsum(dailyMarginsTS))
             instantRegretUCB.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMarginsUCB))
             instantRewardUCB.append(math.fsum(dailyMarginsUCB))
-            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsTS,dailyMarginsUCB
+            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsTS,dailyMarginsUCB,means
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()

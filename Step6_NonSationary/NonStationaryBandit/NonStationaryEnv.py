@@ -3,8 +3,8 @@ import numpy as np
 
 
 class NonStationaryEnv(Environment):
-    def __init__(self, alphas, weights, returnerWeights, M, M0,  prices, costs,  maxQuantity,horizon):
-        super().__init__(alphas, weights, returnerWeights, M, M0,  prices, costs,  maxQuantity)
+    def __init__(self, alphas, weights, returnerWeights, M, M0,  prices, costs,  quantities,quantities_std,horizon):
+        super().__init__(alphas, weights, returnerWeights, M, M0,  prices, costs, quantities,quantities_std)
         self.t = 0
         n_phases = len(self.M)
         self.phase_size = horizon / n_phases

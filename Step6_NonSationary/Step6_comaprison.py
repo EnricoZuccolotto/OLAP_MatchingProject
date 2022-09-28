@@ -97,6 +97,8 @@ if __name__ == '__main__':
                       [0, 0, 0, 1, theta],
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
+    quantities = [1, 2, 3, 4, 5]
+    quantities_std = [1, 2, 1, 1, 1]
     # initialization of the environment
 
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
@@ -117,7 +119,7 @@ if __name__ == '__main__':
     # <list(users)>
     for e in range(n_experiment):
         print('exp ' + str(e))
-        env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs, 15,horizon)
+        env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs,quantities,quantities_std,horizon)
         slidingLearner = NonStationary_Learner_M_M0(2 * int(np.sqrt(horizon)))
         CDLearner=NonStationary_Learner_M_M0(0)
 
@@ -153,7 +155,7 @@ if __name__ == '__main__':
                     phase=int((t-delay) / env.phase_size)
                     optimalDiscountedItem = matchingBestDiscountCode.matcher( M[phase][u.firstLandingItem],
                                                                                 M0[phase][u.firstLandingItem],u, w * pages,
-                                                                        returnerWeights * pages)
+                                                                        returnerWeights * pages,quantities)
 
                     oldDiscountedItemSliding=int(copy.deepcopy(u.discountedItem[0]))
                     oldDiscountedItemCD = int(copy.deepcopy(u.discountedItem[1]))
@@ -200,11 +202,13 @@ if __name__ == '__main__':
                     margin = env.userVisits(u,u.firstLandingItem)
                     if margin >0:
                         possibleReturningUser.append(u)
+                        means = [np.mean(env.itemsBought[i]) if len(env.itemsBought[i]) > 0 else 0 for i in range(5)]
+
                         u.discountedItem =[matchingBestDiscountCode.matcher(slidingLearner.pull_arm(u.firstLandingItem),
                                                                                 slidingLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                returnerWeights * pages),matchingBestDiscountCode.matcher(CDLearner.pull_arm(u.firstLandingItem),
+                                                                                returnerWeights * pages,means),matchingBestDiscountCode.matcher(CDLearner.pull_arm(u.firstLandingItem),
                                                                                 CDLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                returnerWeights * pages)]
+                                                                                returnerWeights * pages,means)]
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             env.updateT()
@@ -213,7 +217,7 @@ if __name__ == '__main__':
             instantRewardSliding.append(math.fsum(dailyMarginsSliding))
             instantRegretCD.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMarginsCD))
             instantRewardCD.append(math.fsum(dailyMarginsCD))
-            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsSliding,dailyMarginsCD
+            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsSliding,means,dailyMarginsCD
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()

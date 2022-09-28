@@ -74,43 +74,43 @@ class matchingBestDiscountCode():
     def updateActivationProb_returnerWeights(self,returnerWeights):
         self.activationProb_ReturnerWeights = [self.monteCarloRuns(self.numberOfRuns, p, returnerWeights[p]) for p in range(5)]
 
-    def matcher(self,M,M0,user,weights,returnerWeights):
+    def matcher(self,M,M0,user,weights,returnerWeights,estimatedQuantities):
 
-        w=np.nan_to_num([self.noDiscountCase(M0,user,returnerWeights) if p>4 else self.discountCase(M,user,p,self.productsExplorableByUser(p,weights,user)) for p in range(6)])
+        w=np.nan_to_num([self.noDiscountCase(M0,user,returnerWeights,estimatedQuantities) if p>4 else self.discountCase(M,user,p,self.productsExplorableByUser(p,weights,user),estimatedQuantities) for p in range(6)])
 
         return np.random.choice(np.where(w == max(w))[0])
 
 
-    def noDiscountCase(self,M0,user,returnerWeights):
+    def noDiscountCase(self,M0,user,returnerWeights,estimatedQuantities):
         reward=0
         for p in range(5):
             if user.probabilityFutureBehaviour[p]==0:
                 r=0
             else:
                 visitableNodes=self.productsExplorableByUser(p, returnerWeights[p], user)
-                r=np.sum(self.activationProb_weights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes)
+                r=np.sum(self.activationProb_weights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes*estimatedQuantities)
             if r!=0:
                 reward+= r * M0[p]
         return reward
 
-    def discountCase(self,M,user,p,visitableNodes):
+    def discountCase(self,M,user,p,visitableNodes,estimatedQuantities):
         if user.probabilityFutureBehaviour[p] == 0:
             reward = 0
         else:
-            reward  = np.sum((self.activationProb_ReturnerWeights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes)) - self.prices[p]*user.probabilityFutureBehaviour[p]
+            reward  = np.sum((self.activationProb_ReturnerWeights[p]*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes*estimatedQuantities)) - self.prices[p]*user.probabilityFutureBehaviour[p]
         if reward!=0:
             reward=reward * M[p]
         return reward
 
-    def matcherAggregatedReturningUsers(self,weights,returnerWeights,M,M0,user):
+    def matcherAggregatedReturningUsers(self,weights,returnerWeights,M,M0,user,estimatedQuantities):
         w = np.zeros(6)
         for p in range(6):
             if p > 4:
                 # no discount case
-                w[p] = self.noDiscountCase(weights, M0, user)
+                w[p] = self.noDiscountCase(weights, M0, user,estimatedQuantities)
             else:
                 # in case we have a discount
-                w[p] = self.discountCase(returnerWeights, M, user, p)
+                w[p] = self.discountCase(returnerWeights, M, user, p,estimatedQuantities)
         w = np.nan_to_num(w)
 
         return np.random.choice(np.where(w == max(w))[0])
