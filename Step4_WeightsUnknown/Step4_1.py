@@ -96,14 +96,14 @@ if __name__ == '__main__':
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
 
-    quantities = [1, 2, 3, 4, 5]
+    quantities = [5, 4, 6, 10, 3]
     quantities_std = [1, 2, 1, 1, 1]
     # initialization of the environment
 
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
-    ucb = 1
+    ucb = 0
 
-    n_experiment = 5
+    n_experiment = 100
     horizon = 180
     delay = 30
     rewards_per_exp = []
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
 
         for t in range(horizon):
-            print(t)
+            # print(t)
             dailyMargins = [0]
             dailyOptimalMargins = [0]
             possibleReturningUser = []
@@ -170,18 +170,20 @@ if __name__ == '__main__':
                 # if first visit just compute the margin
                 else:
                     margin = env.userVisits(u,u.firstLandingItem)
+
                     if margin >0:
+                        dailyMargins.append(margin)
+                        dailyOptimalMargins.append(margin)
                         possibleReturningUser.append(u)
-                        means = [np.mean(env.itemsBought[i]) if len(env.itemsBought[i]) > 0 else 0 for i in range(5)]
                         u.discountedItem = matchingBestDiscountCode.matcherAggregated(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                weightsLearn.returnWeights()*(pages>0),means)
+                                                                                weightsLearn.returnWeights()*(pages>0),quantities)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
             instantReward.append(math.fsum(dailyMargins))
 
-            del userVisitingToday,margin,dailyMargins,dailyOptimalMargins,means
+            del userVisitingToday,margin,dailyMargins,dailyOptimalMargins
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()
@@ -200,7 +202,6 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('fooo'+str(e)+'.png')
-        plt.legend()
         plt.show()
 
         plt.figure(1)
@@ -211,7 +212,6 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('reward' + str(e) + '.png')
-        plt.legend()
         plt.show()
 
         del instantRegret, possibleReturnersAtTimeT, learner, mean, std, env

@@ -170,20 +170,21 @@ if __name__ == '__main__':
                 # if first visit just compute the margin
                 else:
                     margin = env.userVisits(u,u.firstLandingItem)
-                    if margin >0:
-                        possibleReturningUser.append(u)
-                        means = [np.mean(env.itemsBought[i]) if len(env.itemsBought[i]) > 0 else 0 for i in range(5)]
 
+                    if margin >0:
+                        dailyMargins.append(margin)
+                        dailyOptimalMargins.append(margin)
+                        possibleReturningUser.append(u)
                         u.discountedItem = matchingBestDiscountCode.matcher(slidingLearner.pull_arm(u.firstLandingItem),
                                                                                 slidingLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                returnerWeights * pages,means)
+                                                                                returnerWeights * pages,quantities)
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             env.updateT()
             slidingLearner.time()
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
             instantReward.append(math.fsum(dailyMargins))
-            del userVisitingToday,margin,dailyOptimalMargins,dailyMargins,means
+            del userVisitingToday,margin,dailyOptimalMargins,dailyMargins
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()
@@ -200,8 +201,8 @@ if __name__ == '__main__':
         plt.ylabel("regret")
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-        plt.savefig('fooo'+str(e)+'.png')
-        plt.show()
+        plt.savefig('fooo.png')
+
 
         plt.figure(1)
         mean = np.mean(rewards_per_exp, axis=0)
@@ -210,8 +211,8 @@ if __name__ == '__main__':
         plt.ylabel("reward")
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-        plt.savefig('reward' + str(e) + '.png')
-        plt.show()
+        plt.savefig('reward.png')
+
 
         del instantRegret, possibleReturnersAtTimeT, slidingLearner, mean, std, env
         gc.collect()

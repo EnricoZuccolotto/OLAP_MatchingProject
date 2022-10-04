@@ -88,7 +88,7 @@ if __name__ == '__main__':
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
 
-    quantities = [1, 2, 3, 4, 5]
+    quantities = [5, 4, 6, 10, 3]
     quantities_std = [1, 2, 1, 1, 1]
     # initialization of the environment
 
@@ -194,20 +194,22 @@ if __name__ == '__main__':
                 else:
                     margin = env.userVisits(u,u.firstLandingItem)
                     if margin >0:
+                        dailyMarginsTS.append(margin)
+                        dailyMarginsUCB.append(margin)
+                        dailyOptimalMargins.append(margin)
                         possibleReturningUser.append(u)
-                        means = [np.mean(env.itemsBought[i]) if len(env.itemsBought[i]) > 0 else 0 for i in range(5)]
                         u.discountedItem =[matchingBestDiscountCode.matcher(TS_learner.pull_arm(u.firstLandingItem),
                                                                             TS_learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                            returnerWeights * pages,means),matchingBestDiscountCode.matcher(UCB_learner.pull_arm(u.firstLandingItem),
+                                                                            returnerWeights * pages,quantities),matchingBestDiscountCode.matcher(UCB_learner.pull_arm(u.firstLandingItem),
                                                                                                                                       UCB_learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                                                                      returnerWeights * pages,means)]
+                                                                                                                                      returnerWeights * pages,quantities)]
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegretTS.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMarginsTS))
             instantRewardTS.append(math.fsum(dailyMarginsTS))
             instantRegretUCB.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMarginsUCB))
             instantRewardUCB.append(math.fsum(dailyMarginsUCB))
-            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsTS,dailyMarginsUCB,means
+            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsTS,dailyMarginsUCB
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()

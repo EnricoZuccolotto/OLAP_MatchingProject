@@ -14,7 +14,6 @@ class Environment():
         self.prices = prices
         self.costs = costs
         # used to compute the avg quantities
-        self.itemsBought=[[] for _ in range(5)]
 
         self.quantities=quantities
         self.quantities_std=quantities_std
@@ -91,7 +90,6 @@ class Environment():
             quantity = 0
             user.probabilityFutureBehaviour[product] = 0
         user.cart[product]=quantity
-        self.itemsBought[product].append(quantity)
 
         return quantity>0
 
@@ -112,7 +110,7 @@ class Environment():
     def returningLandingProduct(self, user):
         # if user has a discounted item will land for sure on the discounted page
         if user.discountedItem <5:
-            if np.random.rand() < self.M[user.firstLandingItem][user.discountedItem]:
+            if np.random.random() < self.M[user.firstLandingItem][user.discountedItem]:
                 return user.discountedItem
         else:
             # No discounted item-->will land to page of product p with probability M0[firstLandingProduct][p],

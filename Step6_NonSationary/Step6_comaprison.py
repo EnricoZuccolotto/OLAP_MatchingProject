@@ -200,15 +200,17 @@ if __name__ == '__main__':
                 # if first visit just compute the margin
                 else:
                     margin = env.userVisits(u,u.firstLandingItem)
-                    if margin >0:
-                        possibleReturningUser.append(u)
-                        means = [np.mean(env.itemsBought[i]) if len(env.itemsBought[i]) > 0 else 0 for i in range(5)]
 
+                    if margin >0:
+                        dailyMarginsSliding.append(margin)
+                        dailyMarginsCD.append(margin)
+                        dailyOptimalMargins.append(margin)
+                        possibleReturningUser.append(u)
                         u.discountedItem =[matchingBestDiscountCode.matcher(slidingLearner.pull_arm(u.firstLandingItem),
                                                                                 slidingLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
                                                                                 returnerWeights * pages,means),matchingBestDiscountCode.matcher(CDLearner.pull_arm(u.firstLandingItem),
                                                                                 CDLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                returnerWeights * pages,means)]
+                                                                                returnerWeights * pages,quantities)]
 
             possibleReturnersAtTimeT.append(possibleReturningUser)
             env.updateT()
@@ -217,7 +219,7 @@ if __name__ == '__main__':
             instantRewardSliding.append(math.fsum(dailyMarginsSliding))
             instantRegretCD.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMarginsCD))
             instantRewardCD.append(math.fsum(dailyMarginsCD))
-            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsSliding,means,dailyMarginsCD
+            del userVisitingToday,margin,dailyOptimalMargins,dailyMarginsSliding,dailyMarginsCD
             if t - delay >= 0:
                 del returnerUsers
             gc.collect()
@@ -241,9 +243,10 @@ if __name__ == '__main__':
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4,color='green')
         plt.plot(meanCD, color='blue',label='Change detection')
         plt.fill_between(range(horizon), meanCD - stdCD, meanCD + stdCD, alpha=0.4,color='blue')
-        plt.savefig('fooo'+str(e)+'.png')
         plt.legend()
-        plt.show()
+        plt.savefig('fooo.png')
+
+
 
         plt.figure(1)
         mean = np.mean(rewards_per_exp_sliding, axis=0)
@@ -256,9 +259,10 @@ if __name__ == '__main__':
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4,color='green')
         plt.plot(meanCD, color='blue', label='Change detection')
         plt.fill_between(range(horizon), meanCD - stdCD, meanCD + stdCD, alpha=0.4,color='blue')
-        plt.savefig('reward' + str(e) + '.png')
         plt.legend()
-        plt.show()
+        plt.savefig('reward.png')
+
+
 
         del instantRegretSliding, possibleReturnersAtTimeT, slidingLearner,CDLearner,instantRegretCD, mean, std,meanCD,stdCD, env
         gc.collect()
