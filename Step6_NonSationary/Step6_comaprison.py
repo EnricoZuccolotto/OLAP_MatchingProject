@@ -133,6 +133,7 @@ if __name__ == '__main__':
 
         for t in range(horizon):
             print('time:'+str(t))
+            margin=-1
             dailyMarginsSliding = [0]
             dailyMarginsCD = [0]
             dailyOptimalMargins = [0]
@@ -245,6 +246,7 @@ if __name__ == '__main__':
         plt.fill_between(range(horizon), meanCD - stdCD, meanCD + stdCD, alpha=0.4,color='blue')
         plt.legend()
         plt.savefig('fooo.png')
+        plt.clf()
 
 
 
@@ -261,6 +263,7 @@ if __name__ == '__main__':
         plt.fill_between(range(horizon), meanCD - stdCD, meanCD + stdCD, alpha=0.4,color='blue')
         plt.legend()
         plt.savefig('reward.png')
+        plt.clf()
 
 
 

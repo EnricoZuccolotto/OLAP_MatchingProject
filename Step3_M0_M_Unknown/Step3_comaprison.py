@@ -126,6 +126,7 @@ if __name__ == '__main__':
 
         for t in range(horizon):
             print('time:'+str(t))
+            margin=-1
             dailyMarginsTS = [0]
             dailyMarginsUCB = [0]
             dailyOptimalMargins = [0]
@@ -235,7 +236,7 @@ if __name__ == '__main__':
         plt.fill_between(range(horizon), meanCD - stdCD, meanCD + stdCD, alpha=0.4,color='blue')
         plt.savefig('fooo'+str(e)+'.png')
         plt.legend()
-        plt.show()
+        plt.clf()
 
         plt.figure(1)
         mean = np.mean(rewards_per_exp_TS, axis=0)
@@ -250,7 +251,7 @@ if __name__ == '__main__':
         plt.fill_between(range(horizon), meanCD - stdCD, meanCD + stdCD, alpha=0.4,color='blue')
         plt.savefig('reward' + str(e) + '.png')
         plt.legend()
-        plt.show()
+        plt.clf()
 
         del instantRegretTS, possibleReturnersAtTimeT, TS_learner,UCB_learner,instantRegretUCB, mean, std,meanCD,stdCD, env
         gc.collect()

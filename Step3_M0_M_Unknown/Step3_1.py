@@ -124,6 +124,7 @@ if __name__ == '__main__':
 
         for t in range(horizon):
             print(t)
+            margin=-1
             dailyMargins = [0]
             dailyOptimalMargins = [0]
             possibleReturningUser = []
@@ -196,7 +197,7 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('fooo'+str(e)+'.png')
-        plt.show()
+        plt.clf()
 
         plt.figure(1)
         mean = np.mean(rewards_per_exp, axis=0)
@@ -206,7 +207,8 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('reward' + str(e) + '.png')
-        plt.show()
+        plt.clf()
+
 
         del instantRegret, possibleReturnersAtTimeT, learner, mean, std, env
         gc.collect()

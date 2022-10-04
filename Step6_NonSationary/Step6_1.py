@@ -125,6 +125,7 @@ if __name__ == '__main__':
         instantReward=[]
 
         for t in range(horizon):
+            margin=-1
             print('time:'+str(t))
             dailyMargins = [0]
             dailyOptimalMargins = [0]
@@ -202,6 +203,7 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('fooo.png')
+        plt.clf()
 
 
         plt.figure(1)
@@ -212,6 +214,7 @@ if __name__ == '__main__':
         plt.plot(mean)
         plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
         plt.savefig('reward.png')
+        plt.clf()
 
 
         del instantRegret, possibleReturnersAtTimeT, slidingLearner, mean, std, env
