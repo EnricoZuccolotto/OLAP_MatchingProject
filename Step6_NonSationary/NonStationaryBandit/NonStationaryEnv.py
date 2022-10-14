@@ -10,8 +10,9 @@ class NonStationaryEnv(Environment):
         self.phase_size = horizon / n_phases
 
     # if user will return,return the product in which it will lands otherwise return None
-    def returningLandingProduct(self, user):
-        current_phase = int(self.t / self.phase_size)
+
+    def returningLandingProduct(self, user,current_phase):
+
         # if user has a discounted item will land for sure on the discounted page
         if user.discountedItem <5:
             if np.random.rand() < self.M[current_phase][user.firstLandingItem][user.discountedItem]:

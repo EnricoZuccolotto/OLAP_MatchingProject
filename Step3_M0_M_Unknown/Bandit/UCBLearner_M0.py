@@ -17,8 +17,8 @@ class UCBLearner_M0(UCBLearner):
             else:
                 self.rewards_per_product[idx].append(0)
             n = len(self.rewards_per_product[idx])
-            if n > 1:
-                self.M0_width[idx] = np.sqrt(2 * np.log(self.t) / (n*(self.t-1)))
+            if n > 0:
+                self.M0_width[idx] = 0.1 *  np.sqrt(2* np.log(self.t) / n)
                 self.M0[idx] = np.mean(self.rewards_per_product[idx])
             else:
                 self.M0_width[idx] = np.inf

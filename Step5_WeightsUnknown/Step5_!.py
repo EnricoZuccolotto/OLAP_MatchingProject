@@ -29,10 +29,14 @@ def printProb():
                             learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
                 print(prob)
 def returningVisit(user1):
+
     landingProduct = env.returningLandingProduct(user1)
-    reward = landingProduct<5*1
+    reward = 1 if landingProduct < 5 else 0
     learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
+
     m = env.userVisits(user1, landingProduct)
+    if landingProduct < 5 and oldDiscountedItem == 5:
+        weightsLearn.updateEstimates(u.episode)
     return m
 if __name__ == '__main__':
     # TODO: defines parameters, two different graph weights
@@ -64,25 +68,25 @@ if __name__ == '__main__':
                    [0.03, 0.02, 0.05, 0.035, 0.01]])
 
     # initialization of the weight for each class defined by discounted product
-    returnerWeights = np.array([[[0, 0.65, 0.5, 0.4, 0.25],
+    returnerWeights = np.array([[[0, 0.065, 0.05, 0.04, 0.025],
                                  [0.6, 0.0, 0.35, 0.2, 0.5],
                                  [0.48, 0.5, 0.0, 0.3, 0.4],
                                  [0.49, 0.6, 0.45, 0, 0.55],
                                  [0.35, 0.45, 0.55, 0.65, 0]],
-                                [[0, 0.45, 0.48, 0.35, 0.5],
-                                 [0.55, 0, 0.45, 0.63, 0.38],
+                                [[0, 0.20, 0.28, 0.235, 0.25],
+                                 [0.255, 0, 0.245, 0.263, 0.238],
                                  [0.59, 0.47, 0, 0.58, 0.61],
                                  [0.41, 0.45, 0.6, 0, 0.5],
                                  [0.45, 0.39, 0.47, 0.55, 0]],
                                 [[0, 0.43, 0.58, 0.55, 0.39],
                                  [0.42, 0, 0.57, 0.61, 0.6],
-                                 [0.47, 0.53, 0, 0.58, 0.62],
+                                 [0.047, 0.053, 0, 0.058, 0.062],
                                  [0.41, 0.49, 0.58, 0, 0.6],
                                  [0.45, 0.5, 0.35, 0.6, 0]],
                                 [[0, 0.5, 0.4, 0.37, 0.61],
                                  [0.39, 0, 0.47, 0.43, 0.53],
                                  [0.65, 0.55, 0, 0.47, 0.6],
-                                 [0.5, 0.37, 0.47, 0, 0.44],
+                                 [0.59, 0.637, 0.647, 0, 0.644],
                                  [0.51, 0.57, 0.6, 0.63, 0]],
                                 [[0, 0.45, 0.42, 0.37, 0.58],
                                  [0.57, 0, 0.5, 0.6, 0.57],
@@ -126,6 +130,7 @@ if __name__ == '__main__':
 
 
         for t in range(horizon):
+            print(t)
             margin=-1
             dailyMargins = [0]
             dailyOptimalMargins = [0]
@@ -171,11 +176,11 @@ if __name__ == '__main__':
                 # if first visit just compute the margin
                 else:
                     margin = env.userVisits(u,u.firstLandingItem)
-
+                    if u.episode is not None:
+                        weightsLearn.updateEstimates(u.episode)
                     if margin >0:
                         dailyMargins.append(margin)
                         dailyOptimalMargins.append(margin)
-                        weightsLearn.updateEstimates(u.episode)
                         possibleReturningUser.append(u)
                         u.discountedItem = matchingBestDiscountCode.matcher(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u,

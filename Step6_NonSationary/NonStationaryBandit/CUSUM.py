@@ -19,7 +19,7 @@ class CUSUM():
             s_plus = (sample - self.refPoint) - self.eps
             s_minus = -(sample - self.refPoint) - self.eps
             self.g_plus = max(0, self.g_plus + s_plus)
-            self.g_plus = max(0, self.g_minus + s_minus)
+            self.g_minus = max(0, self.g_minus + s_minus)
             return self.g_plus > self.h or self.g_minus > self.h
 
     def reset(self):

@@ -2,7 +2,7 @@
 import copy
 import math
 import gc
-from Step2_maximization.matcher import matchingBestDiscountCode
+from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
 from Step4_WeightsUnknown.weightsLearner import weightsLearner
 from Step3_M0_M_Unknown.Bandit.Learner_M0_M import Learner_M0_M
@@ -27,10 +27,13 @@ def printProb():
                             learner.learners[p].M0_beta[i][0] + learner.learners[p].M0_beta[i][1])
                 print(prob)
 def returningVisit(user1):
+
     landingProduct = env.returningLandingProduct(user1)
-    reward = landingProduct<5*1
+    reward = 1 if landingProduct < 5 else 0
     learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)
+    if landingProduct<5 and oldDiscountedItem<5:
+        weightsLearn.updateEstimates(user1.episode)
     return m
 if __name__ == '__main__':
     # TODO: defines parameters, two different graph weights
@@ -62,13 +65,13 @@ if __name__ == '__main__':
                    [0.03, 0.02, 0.05, 0.035, 0.01]])
 
     # initialization of the weight for each class defined by discounted product
-    returnerWeights = np.array([[[0, 0.65, 0.5, 0.4, 0.25],
+    returnerWeights = np.array([[[0, 0.065, 0.05, 0.04, 0.025],
                                  [0.6, 0.0, 0.35, 0.2, 0.5],
                                  [0.48, 0.5, 0.0, 0.3, 0.4],
                                  [0.49, 0.6, 0.45, 0, 0.55],
                                  [0.35, 0.45, 0.55, 0.65, 0]],
-                                [[0, 0.45, 0.48, 0.35, 0.5],
-                                 [0.55, 0, 0.45, 0.63, 0.38],
+                                [[0, 0.20, 0.28, 0.235, 0.25],
+                                 [0.255, 0, 0.245, 0.263, 0.238],
                                  [0.59, 0.47, 0, 0.58, 0.61],
                                  [0.41, 0.45, 0.6, 0, 0.5],
                                  [0.45, 0.39, 0.47, 0.55, 0]],
@@ -80,13 +83,13 @@ if __name__ == '__main__':
                                 [[0, 0.5, 0.4, 0.37, 0.61],
                                  [0.39, 0, 0.47, 0.43, 0.53],
                                  [0.65, 0.55, 0, 0.47, 0.6],
-                                 [0.5, 0.37, 0.47, 0, 0.44],
+                                 [0.59, 0.637, 0.647, 0, 0.644],
                                  [0.51, 0.57, 0.6, 0.63, 0]],
                                 [[0, 0.45, 0.42, 0.37, 0.58],
                                  [0.57, 0, 0.5, 0.6, 0.57],
                                  [0.38, 0.45, 0.0, 0.47, 0.5],
                                  [0.52, 0.39, 0.49, 0, 0.5],
-                                 [0.65, 0.54, 0.45, 0.59, 0]]]
+                                 [0.065, 0.054, 0.045, 0.059, 0]]]
                                )
     theta = 0.8
     # initialization of the 5 fixed webpages
@@ -109,9 +112,9 @@ if __name__ == '__main__':
     rewards_per_exp = []
     regrets_per_exp=[]
     numberOfDailyVisit =150
-    # matchingBestDiscountCode.updateActivationProb_weights(w * pages)
-    # matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
-
+    matchingBestDiscountCode.updateActivationProb_weights_optimal(w * pages)
+    matchingBestDiscountCode.updateActivationProb_returnerWeights_optimal(returnerWeights * pages)
+    matchingBestDiscountCode.updateActivationProb_weights(w * pages)
     # user that visited our website at time t
     # <list(users)>
     for e in range(n_experiment):
@@ -122,6 +125,7 @@ if __name__ == '__main__':
         possibleReturnersAtTimeT = []
         instantRegret = []
         instantReward=[]
+        returnerWeightsEstimated = [weightsLearn.returnWeights() * (pages > 0) for i in range(5)]
 
 
         for t in range(horizon):
@@ -146,13 +150,12 @@ if __name__ == '__main__':
             for u in userVisitingToday:
 
                 if u.returner:
-                    optimalDiscountedItem = matchingBestDiscountCode.matcher( M[u.firstLandingItem],
+                    optimalDiscountedItem = matchingBestDiscountCode.matcher_opt( M[u.firstLandingItem],
                                                                                 M0[u.firstLandingItem],u, w * pages,
                                                                         returnerWeights * pages,quantities)
 
                     oldDiscountedItem=int(copy.deepcopy(u.discountedItem))
                     margin = returningVisit(u)
-                    weightsLearn.updateEstimates(u.episode)
                     dailyMargins.append(margin)
 
 
@@ -176,10 +179,13 @@ if __name__ == '__main__':
                         dailyMargins.append(margin)
                         dailyOptimalMargins.append(margin)
                         possibleReturningUser.append(u)
-                        u.discountedItem = matchingBestDiscountCode.matcherAggregated(learner.pull_arm(u.firstLandingItem),
+                        returnerWeightsEstimated = [weightsLearn.returnWeights() * (pages > 0) for i in range(5)]
+                        u.discountedItem = matchingBestDiscountCode.matcher(learner.pull_arm(u.firstLandingItem),
                                                                         learner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                weightsLearn.returnWeights()*(pages>0),quantities)
+                                                                                returnerWeightsEstimated,quantities)
 
+
+            matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeightsEstimated)
             possibleReturnersAtTimeT.append(possibleReturningUser)
             instantRegret.append(math.fsum(dailyOptimalMargins) - math.fsum(dailyMargins))
             instantReward.append(math.fsum(dailyMargins))

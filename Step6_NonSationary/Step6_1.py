@@ -2,7 +2,7 @@
 import copy
 import math
 import gc
-from Step2_maximization.matcher import matchingBestDiscountCode
+from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step6_NonSationary.NonStationaryBandit.NonStationaryEnv import NonStationaryEnv
 
 from Step6_NonSationary.NonStationaryBandit.NonSationary_Learner_M0_M import NonStationary_Learner_M_M0
@@ -10,11 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def returningVisit(user1):
-    landingProduct = env.returningLandingProduct(user1)
-    if landingProduct<5:
-        reward=1
-    else:
-        reward=0
+    current_phase = min(1,int((env.t-delay)/ env.phase_size))
+    landingProduct = env.returningLandingProduct(user1,current_phase)
+    reward= 1 if landingProduct < 5 else 0
     slidingLearner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)
     return m
@@ -41,11 +39,11 @@ if __name__ == '__main__':
                   [0.25, 0.31, 0.15, 0.28, 0.44],
                   [0.19, 0.28, 0.42, 0.17, 0.35],
                   [0.35, 0.25, 0.29, 0.5, 0.47]],
-                 [[0.03, 0.04, 0.038, 0.045, 0.02],
-                  [0.9, 0.9, 0.94, 0.9, 0.90],
-                  [0.025, 0.031, 0.15, 0.28, 0.44],
-                  [0.019, 0.028, 0.42, 0.017, 0.35],
-                  [0.035, 0.025, 0.29, 0.5, 0.47]]]
+                  [[0.6, 0.04, 0.038, 0.045, 0.8],
+                   [0.2, 0.5, 0.34, 0.4, 0.1],
+                   [0.25, 0.31, 0.15, 0.28, 0.44],
+                   [0.19, 0.28, 0.42, 0.17, 0.35],
+                   [0.35, 0.25, 0.29, 0.5, 0.47]]]
                  )
     # initialization of the matrix M0
     M0 = np.array([[[0.01, 0.05, 0.02, 0.03, 0.025],
@@ -95,7 +93,7 @@ if __name__ == '__main__':
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
 
-    quantities = [1, 2, 3, 4, 5]
+    quantities = [5, 4, 6, 10, 3]
     quantities_std = [1, 2, 1, 1, 1]
     # initialization of the environment
 
@@ -108,15 +106,15 @@ if __name__ == '__main__':
     regrets_per_exp = []
     rewards_per_exp = []
     numberOfDailyVisit =150
-    # matchingBestDiscountCode.updateActivationProb_weights(w * pages)
-    # matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
+    matchingBestDiscountCode.updateActivationProb_weights(w * pages)
+    matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
 
     # user that visited our website at time t
     # <list(users)>
     for e in range(n_experiment):
         print('exp ' + str(e))
-        env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs,quantities,quantities_std,horizon)
-        slidingLearner = NonStationary_Learner_M_M0(2 * int(np.sqrt(horizon)))
+        env = NonStationaryEnv(alphas, w * pages, returnerWeights * pages, M, M0, prices, costs,quantities,quantities_std,280)
+        slidingLearner = NonStationary_Learner_M_M0(0)
 
 
         possibleReturnersAtTimeT = []
@@ -145,10 +143,10 @@ if __name__ == '__main__':
             for u in userVisitingToday:
 
                 if u.returner:
-                    phase=int((t-delay) / env.phase_size)
+                    phase=min(1,int((t-delay) / env.phase_size))
                     optimalDiscountedItem = matchingBestDiscountCode.matcher( M[phase][u.firstLandingItem],
                                                                                 M0[phase][u.firstLandingItem],u, w * pages,
-                                                                        returnerWeights * pages)
+                                                                        returnerWeights * pages,quantities)
 
                     oldDiscountedItem=int(copy.deepcopy(u.discountedItem))
                     margin = returningVisit(u)
@@ -159,7 +157,7 @@ if __name__ == '__main__':
 
                     if int(oldDiscountedItem)!=int(optimalDiscountedItem):
                         u.discountedItem = optimalDiscountedItem
-                        landingProduct = env.returningLandingProduct(u)
+                        landingProduct = env.returningLandingProduct(u,phase)
                         optimalMargin = env.userVisits(u, landingProduct)
                         dailyOptimalMargins.append(optimalMargin)
                     else:

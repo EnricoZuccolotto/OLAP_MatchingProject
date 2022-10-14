@@ -10,10 +10,7 @@ import numpy as np
 
 def returningVisit(user1,l):
     landingProduct = env.returningLandingProduct(user1)
-    if landingProduct<5:
-        reward=1
-    else:
-        reward=0
+    reward = 1 if landingProduct < 5 else 0
     l.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     l.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)
@@ -97,7 +94,7 @@ if __name__ == '__main__':
                       [0, 0, 0, 1, theta],
                       [theta, 0, 0, 0, 1],
                       [1, 0, theta, 0, 0]])
-    quantities = [1, 2, 3, 4, 5]
+    quantities = [5, 4, 6, 10, 3]
     quantities_std = [1, 2, 1, 1, 1]
     # initialization of the environment
 

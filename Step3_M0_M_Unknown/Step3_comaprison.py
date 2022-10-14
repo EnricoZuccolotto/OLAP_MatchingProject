@@ -10,10 +10,7 @@ import numpy as np
 
 def returningVisit(user1,l):
     landingProduct = env.returningLandingProduct(user1)
-    if landingProduct<5:
-        reward=1
-    else:
-        reward=0
+    reward = 1 if landingProduct < 5 else 0
     l.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     l.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)

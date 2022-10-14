@@ -25,7 +25,7 @@ class slidingWindow(UCBLearner_M0):
         for a in range(self.number_arms-1):
             n = len(np.concatenate((np.concatenate(self.rewards_per_arm_at_time_t[a],axis=None),
                                self.rewards_per_arm[a]),axis=None))
-            self.widths[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
+            self.widths[a] = np.sqrt(2 * np.log(total_valid_samples) / n) if n > 0 else np.inf
 
 
     def updateM0(self, pulled_arm,landingProduct, reward):
@@ -43,7 +43,7 @@ class slidingWindow(UCBLearner_M0):
                                    self.rewards_per_product[a]),axis=None)
             n = len(valid_sample_per_arm)
             self.M0[a] = np.mean(valid_sample_per_arm)
-            self.M0_width[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
+            self.M0_width[a] = 0.1*np.sqrt(2 * np.log(total_valid_samples) / n) if n > 0 else np.inf
 
     def time(self):
         for p in range(6):

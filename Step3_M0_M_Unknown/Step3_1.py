@@ -2,7 +2,7 @@
 import copy
 import math
 import gc
-from Step2_maximization.matcher import matchingBestDiscountCode
+from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
 from Step1_Environment.Environment import Environment
 from Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
@@ -14,6 +14,7 @@ def printProb():
             print(learner.pull_arm(p))
             print([len(x) for x in learner.learners[p].rewards_per_arm])
             print(learner.pull_arm_M0(p))
+            print([len(x) for x in learner.learners[p].rewards_per_product])
 
     else:
         for p in range(5):
@@ -28,7 +29,7 @@ def printProb():
                 print(prob)
 def returningVisit(user1):
     landingProduct = env.returningLandingProduct(user1)
-    reward = landingProduct<5
+    reward = 1 if landingProduct < 5 else 0
     learner.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     m = env.userVisits(user1, landingProduct)
     return m
@@ -101,7 +102,7 @@ if __name__ == '__main__':
     # initialization of the environment
 
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
-    ucb = 0
+    ucb = 1
 
     n_experiment = 100
     horizon = 180
@@ -109,8 +110,8 @@ if __name__ == '__main__':
     regrets_per_exp = []
     rewards_per_exp = []
     numberOfDailyVisit =150
-    # matchingBestDiscountCode.updateActivationProb_weights(w * pages)
-    # matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
+    matchingBestDiscountCode.updateActivationProb_weights(w * pages)
+    matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
 
     # user that visited our website at time t
     # <list(users)>

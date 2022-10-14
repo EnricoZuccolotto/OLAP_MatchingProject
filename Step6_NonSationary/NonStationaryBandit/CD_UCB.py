@@ -1,6 +1,6 @@
 from Step3_M0_M_Unknown.Bandit.UCBLearner_M0 import UCBLearner_M0
 import numpy as np
-from CUSUM import CUSUM
+from Step6_NonSationary.NonStationaryBandit.CUSUM import CUSUM
 
 
 
@@ -9,8 +9,8 @@ class CD_CUSUM_UCB(UCBLearner_M0):
         super(CD_CUSUM_UCB, self).__init__(n_arms)
         self.change_detection = [CUSUM(M, eps, h) for _ in range(n_arms)]
         self.detections = [[] for _ in range(n_arms)]
-        self.change_detection_M0=[CUSUM(M, eps, h) for _ in range(n_arms)]
-        self.detections_M0 = [[] for _ in range(n_arms)]
+        self.change_detection_M0=[CUSUM(M, eps*0.1, h) for _ in range(n_arms-1)]
+        self.detections_M0 = [[] for _ in range(n_arms-1)]
         self.aplha = alpha
 
     def pull_arm(self):
@@ -22,25 +22,28 @@ class CD_CUSUM_UCB(UCBLearner_M0):
             return costs_random
 
     def update(self, pulled_arm, reward):
-        self.t+=1
         if self.change_detection[pulled_arm].update(reward):
+            print('change ' + str(pulled_arm))
             self.detections[pulled_arm].append(self.t)
+            if pulled_arm==(self.number_arms-1):
+                self.rewards_per_product = [[] for _ in range(self.number_arms - 1)]
             self.rewards_per_arm[pulled_arm] = []
             self.change_detection[pulled_arm].reset()
+
 
         self.rewards_per_arm[pulled_arm].append(reward)
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
         total_valid_samples = sum([len(x) for x in self.rewards_per_arm])
         for a in range(self.number_arms-1):
             n = len(self.rewards_per_arm[a])
-            self.widths[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
+            self.widths[a] = np.sqrt(2 * np.log(total_valid_samples) / n) if n > 0 else np.inf
 
     def pull_arm_M0(self):
         if np.random.binomial(1, 1 - self.aplha):
             upper_conf = self.M0 + self.M0_width
             return upper_conf
         else:
-            costs_random = np.random.rand(5)
+            costs_random = np.random.rand(5)*0.1
             return costs_random
 
     def updateM0(self, pulled_arm,landingProduct, reward):
@@ -52,7 +55,7 @@ class CD_CUSUM_UCB(UCBLearner_M0):
                 r=0
             if self.change_detection_M0[idx].update(r):
                 self.detections_M0[idx].append(self.t)
-                self.rewards_per_product[idx] = []
+                self.rewards_per_product = [[] for _ in range(self.number_arms-1)]
                 self.change_detection_M0[idx].reset()
 
             self.rewards_per_product[idx].append(r)
@@ -61,7 +64,7 @@ class CD_CUSUM_UCB(UCBLearner_M0):
         for a in range(self.number_arms-1):
             n = len(self.rewards_per_product[a])
             self.M0[a] = np.mean(self.rewards_per_product[a])
-            self.M0_width[a] = np.sqrt(2 * np.log(total_valid_samples) / (n*(total_valid_samples-1))) if n > 1 else np.inf
+            self.M0_width[a] = 0.1*np.sqrt(2 * np.log(total_valid_samples) / n) if n > 0 else np.inf
 
 
     def time(self):
