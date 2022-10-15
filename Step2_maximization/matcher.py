@@ -1,5 +1,4 @@
 import copy
-import math
 from Step2_maximization.monteCarlo import monteCarlo
 import numpy as np
 
@@ -26,7 +25,7 @@ class matchingBestDiscountCode():
                 w[p]=self.discountCase(returnerWeights[p],M,user,p,estimatedQuantities)
         w=np.nan_to_num(w)
 
-        return w
+        return np.random.choice(np.where(w == max(w))[0])
 
 
     def noDiscountCase(self,weights,M0,user,estimatedQuantities):
