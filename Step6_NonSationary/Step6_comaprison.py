@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def returningVisit(user1,l):
-    landingProduct = env.returningLandingProduct(user1)
+    current_phase = min(1, int((env.t - delay) / env.phase_size))
+    landingProduct = env.returningLandingProduct(user1,current_phase)
     reward = 1 if landingProduct < 5 else 0
     l.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
     l.update(user1.firstLandingItem, user1.discountedItem, landingProduct, reward)
@@ -165,7 +166,7 @@ if __name__ == '__main__':
                     marginCD = returningVisit(u, CDLearner)
                     # optimal visit
                     u.discountedItem = optimalDiscountedItem
-                    landingProduct = env.returningLandingProduct(u)
+                    landingProduct = env.returningLandingProduct(u,phase)
                     optimalMargin = env.userVisits(u, landingProduct)
                     # append optimal margin for both
                     dailyOptimalMargins.append(optimalMargin)
@@ -206,7 +207,7 @@ if __name__ == '__main__':
                         possibleReturningUser.append(u)
                         u.discountedItem =[matchingBestDiscountCode.matcher(slidingLearner.pull_arm(u.firstLandingItem),
                                                                                 slidingLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
-                                                                                returnerWeights * pages,means),matchingBestDiscountCode.matcher(CDLearner.pull_arm(u.firstLandingItem),
+                                                                                returnerWeights * pages,quantities),matchingBestDiscountCode.matcher(CDLearner.pull_arm(u.firstLandingItem),
                                                                                 CDLearner.pull_arm_M0(u.firstLandingItem), u, w * pages,
                                                                                 returnerWeights * pages,quantities)]
 
