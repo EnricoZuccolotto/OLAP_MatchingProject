@@ -8,6 +8,7 @@ from Step1_Environment.Environment import Environment
 from Step3_M0_M_Unknown.Bandit.Learner_M0_M import Learner_M0_M
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
 def returningVisit(user1):
 
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     f.close()
     # initialization of the environment
 
-    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
+    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
     ucb = 1
 
     n_experiment = 100
@@ -146,7 +147,7 @@ if __name__ == '__main__':
                     returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
                     print(returnerWeightsEstimated)
                     print('context')
-                    learnersWeights=context_gen.new_context(episodes_set,quantities,learnersWeights)
+                    learnersWeights=context_gen.new_context(episodes_set,quantities,learnersWeights,pages)
                     returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
                     print(returnerWeightsEstimated)
             gc.collect()
