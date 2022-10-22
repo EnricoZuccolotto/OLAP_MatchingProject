@@ -143,13 +143,8 @@ if __name__ == '__main__':
 
             if t - delay >= 0:
                 del returnerUsers
-                if t%180==0:
-                    returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
-                    print(returnerWeightsEstimated)
-                    print('context')
+                if t%60==0:
                     learnersWeights=context_gen.new_context(episodes_set,quantities,learnersWeights,pages)
-                    returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
-                    print(returnerWeightsEstimated)
             gc.collect()
         returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
         print(returnerWeightsEstimated)
