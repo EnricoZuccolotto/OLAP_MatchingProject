@@ -1,6 +1,6 @@
 
 import gc
-from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
+from Step2_maximization.heuristic import matchingBestDiscountCode
 from Step2_maximization.matcher import matchingBestDiscountCode as matcher
 from Step1_Environment.Environment import *
 import matplotlib.pyplot as plt
@@ -13,11 +13,9 @@ def returningVisit(user1):
     m = env.userVisits(user1, landingProduct)
     return m
 if __name__ == '__main__':
-    # TODO: defines parameters, two different graph weights
-    # initialization of the prices and costs
+     # initialization of the prices and costs
     f=open("Step1_Environment\config1.json")
     config=json.loads(f.read())
-    print(config)
     prices = np.array(config["prices"])
     costs = np.array(config["costs"])
 
@@ -53,6 +51,7 @@ if __name__ == '__main__':
     horizon = 180
     delay = 30
     rewards_per_exp = []
+    exact_matches_exp=[]
     numberOfDailyVisit =150
     matchingBestDiscountCode.updateActivationProb_weights(w * pages)
     matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeights * pages)
@@ -128,22 +127,29 @@ if __name__ == '__main__':
 
         cumRegret = np.cumsum(instantRegret)
         rewards_per_exp.append(cumRegret)
-        mean = np.mean(rewards_per_exp, axis=0)
-        std = np.std(rewards_per_exp, axis=0) / np.sqrt(e+1)
-        plt.figure(0)
-        plt.xlabel("t")
-        plt.ylabel("regret")
-        plt.plot(mean)
-        plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-        plt.savefig('fooo'+str(e)+'.png')
-        plt.show()
-
-        plt.figure(1)
-        plt.plot(exactMatch)
-        plt.savefig('ratio' + str(e) + '.png')
-        plt.show()
-
-        del instantRegret, possibleReturnersAtTimeT, mean, std, env
+        exact_matches_exp.append(exactMatch)
+        del instantRegret, possibleReturnersAtTimeT, env
         gc.collect()
+    mean = np.mean(rewards_per_exp, axis=0)
+    std = np.std(rewards_per_exp, axis=0) / np.sqrt(n_experiment)
+    plt.figure(0)
+    plt.xlabel("t")
+    plt.ylabel("regret")
+    plt.plot(mean)
+    plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
+    plt.savefig('regret_step2.png')
+    plt.show()
+
+    mean = np.mean(exact_matches_exp, axis=0)
+    std = np.std(exact_matches_exp, axis=0) / np.sqrt(n_experiment)
+    plt.figure(0)
+    plt.xlabel("t")
+    plt.ylabel("exact_matches")
+    plt.plot(mean)
+    plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
+    plt.savefig('matches_step2.png')
+    plt.show()
+
+
 
 

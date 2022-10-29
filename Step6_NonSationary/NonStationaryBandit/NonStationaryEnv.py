@@ -11,7 +11,7 @@ class NonStationaryEnv(Environment):
 
     # if user will return,return the product in which it will lands otherwise return None
 
-    def returningLandingProduct(self, user,current_phase):
+    def returningLandingProductN(self, user,current_phase):
 
         # if user has a discounted item will land for sure on the discounted page
         if user.discountedItem <5:

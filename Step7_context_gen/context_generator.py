@@ -47,12 +47,12 @@ class context_generator():
             # select the most promising features
 
             mask=np.array(self.context[0])== 0
-            print(valueSingleFeature[mask])
+
             valueSingleFeature[mask]=0
             mostPromisingFeature = np.random.choice(
                     np.where(valueSingleFeature == max(valueSingleFeature))[
                         0])
-            print(mostPromisingFeature)
+
             # generate new context
             new_context =copy.deepcopy(self.context)
             new_context.append([0 for _ in range(5)])

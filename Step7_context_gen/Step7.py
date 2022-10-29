@@ -2,7 +2,7 @@
 import copy
 import math
 import gc
-from Step2_maximization.matchingBestDiscountCode import matchingBestDiscountCode
+from Step2_maximization.heuristic import matchingBestDiscountCode
 from Step7_context_gen.context_generator import context_generator
 from Step1_Environment.Environment import Environment
 from Step3_M0_M_Unknown.Bandit.Learner_M0_M import Learner_M0_M
@@ -49,10 +49,10 @@ if __name__ == '__main__':
     f.close()
     # initialization of the environment
 
-    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
+    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
     ucb = 1
 
-    n_experiment = 100
+    n_experiment = 10
     horizon = 360
     delay = 30
     regrets_per_exp = []
@@ -78,7 +78,6 @@ if __name__ == '__main__':
         returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
 
         for t in range(horizon):
-            print('time:'+str(t))
             dailyMargins = [0]
             margin=-1
             dailyOptimalMargins = [0]
@@ -100,7 +99,7 @@ if __name__ == '__main__':
 
                 if u.returner:
 
-                    optimalDiscountedItem = matchingBestDiscountCode.matcher( M[u.firstLandingItem],
+                    optimalDiscountedItem = matchingBestDiscountCode.matcher_opt( M[u.firstLandingItem],
                                                                                 M0[u.firstLandingItem],u, w * pages,
                                                                         returnerWeights * pages,quantities)
 
@@ -132,6 +131,8 @@ if __name__ == '__main__':
                                                                             learner.pull_arm_M0(u.firstLandingItem), u, w*pages,
                                                                             returnerWeightsEstimated,quantities)
 
+
+            # update weight estimations
             returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
             matchingBestDiscountCode.updateActivationProb_returnerWeights(returnerWeightsEstimated)
 
@@ -143,35 +144,38 @@ if __name__ == '__main__':
 
             if t - delay >= 0:
                 del returnerUsers
-                if t%60==0:
+                if t%90==0:
                     learnersWeights=context_gen.new_context(episodes_set,quantities,learnersWeights,pages)
             gc.collect()
-        returnerWeightsEstimated = [learnersWeights[i].returnWeights() * (pages > 0) for i in range(5)]
-        print(returnerWeightsEstimated)
+
         cumRegret = np.cumsum(instantRegret)
         rewards_per_exp.append(instantReward)
         regrets_per_exp.append(cumRegret)
-        mean = np.mean(regrets_per_exp, axis=0)
-        std = np.std(regrets_per_exp, axis=0) / np.sqrt(e + 1)
-        plt.figure(0)
-        plt.xlabel("t")
-        plt.ylabel("regret")
-        plt.plot(mean)
-        plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-        plt.savefig('fooo.png')
-        plt.show()
-
-        plt.figure(1)
-        mean = np.mean(rewards_per_exp, axis=0)
-        std = np.std(rewards_per_exp, axis=0) / np.sqrt(e + 1)
-        plt.xlabel("t")
-        plt.ylabel("reward")
-        plt.plot(mean)
-        plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-        plt.savefig('reward.png')
-        plt.show()
-
-        del instantRegret, possibleReturnersAtTimeT, learner, mean, std, env
+        del instantRegret, possibleReturnersAtTimeT, learner, env
         gc.collect()
+
+
+    s = str('UCB') if ucb else str('TS')
+
+    mean = np.mean(regrets_per_exp, axis=0)
+    std = np.std(regrets_per_exp, axis=0) / np.sqrt(n_experiment)
+    plt.figure(0)
+    plt.xlabel("t")
+    plt.ylabel("regret")
+    plt.plot(mean)
+    plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
+    plt.savefig('regret_step7_' + s + '.png')
+    plt.show()
+
+    plt.figure(1)
+    mean = np.mean(rewards_per_exp, axis=0)
+    std = np.std(rewards_per_exp, axis=0) / np.sqrt(n_experiment)
+    plt.xlabel("t")
+    plt.ylabel("reward")
+    plt.plot(mean)
+    plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
+    plt.savefig('rewards_step7_' + s + '.png')
+    plt.show()
+
 
 

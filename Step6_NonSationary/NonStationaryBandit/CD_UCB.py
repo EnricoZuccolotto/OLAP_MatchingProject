@@ -23,7 +23,6 @@ class CD_CUSUM_UCB(UCBLearner_M0):
 
     def update(self, pulled_arm, reward):
         if self.change_detection[pulled_arm].update(reward):
-            print('change ' + str(pulled_arm))
             self.detections[pulled_arm].append(self.t)
             if pulled_arm==(self.number_arms-1):
                 self.rewards_per_product = [[] for _ in range(self.number_arms - 1)]
