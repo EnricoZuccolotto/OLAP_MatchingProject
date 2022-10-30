@@ -52,7 +52,7 @@ if __name__ == '__main__':
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
     ucb = 1
 
-    n_experiment = 10
+    n_experiment = 100
     horizon = 360
     delay = 30
     regrets_per_exp = []

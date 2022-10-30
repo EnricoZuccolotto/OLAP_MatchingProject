@@ -49,9 +49,9 @@ if __name__ == '__main__':
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
 
     # if 1 we are using the UCB algo otherwise the TS
-    ucb = 1
+    ucb = 0
 
-    n_experiment = 1
+    n_experiment = 100
     horizon = 180
     delay = 30
     regrets_per_exp = []

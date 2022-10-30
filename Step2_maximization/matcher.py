@@ -34,7 +34,7 @@ class matchingBestDiscountCode():
             if user.probabilityFutureBehaviour[p]==0:
                 r=0
             else:
-                weights_new = (weights.T * user.probabilityFutureBehaviour).T
+                weights_new = (np.multiply(weights.T , user.probabilityFutureBehaviour)).T
                 z_p=self.mC.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(weights_new))
                 r = np.sum(z_p * (self.prices - self.costs) * estimatedQuantities)
             if r>0:
@@ -45,9 +45,9 @@ class matchingBestDiscountCode():
         if user.probabilityFutureBehaviour[p]==0:
             reward=0
         else:
-            weights_new = (returnerWeights.T * user.probabilityFutureBehaviour).T
+            weights_new = (np.multiply(returnerWeights.T,user.probabilityFutureBehaviour)).T
             z_p= self.mC.monteCarloRuns(self.numberOfRuns, p, copy.deepcopy(weights_new))
-            reward = np.sum(z_p * (self.prices - self.costs) * estimatedQuantities)-self.prices[p] * user.probabilityFutureBehaviour[p]
+            reward = np.sum(z_p * (self.prices - self.costs) * estimatedQuantities)-(self.prices[p] * user.probabilityFutureBehaviour[p])
         if reward!=0:
             reward=reward * M[p]
 

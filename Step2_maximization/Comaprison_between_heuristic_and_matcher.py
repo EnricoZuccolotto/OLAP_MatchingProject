@@ -1,7 +1,7 @@
 
 import gc
 from Step2_maximization.heuristic import matchingBestDiscountCode
-from Step2_maximization.matcher import matchingBestDiscountCode as matcher
+from Step2_maximization.matcher import matchingBestDiscountCode as Matcher
 from Step1_Environment.Environment import *
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,9 +43,9 @@ if __name__ == '__main__':
     f.close()
     # initialization of the environment
 
-    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,1000)
-    matcher=matcher(prices, costs,1000)
-    ucb = 1
+    matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
+    matcher=Matcher(prices, costs,100)
+
 
     n_experiment = 5
     horizon = 180
@@ -67,7 +67,6 @@ if __name__ == '__main__':
 
 
         for t in range(horizon):
-            print(t)
             dailyMargins = [0]
             dailyOptimalMargins = [0]
             possibleReturningUser = []
@@ -92,9 +91,6 @@ if __name__ == '__main__':
                     oldDiscountedItem=int(copy.deepcopy(u.discountedItem))
                     margin = returningVisit(u)
                     dailyMargins.append(margin)
-
-
-
                     if int(oldDiscountedItem)!=int(optimalDiscountedItem):
                         u.discountedItem = optimalDiscountedItem
                         optimalMargin = returningVisit(u)
@@ -130,6 +126,7 @@ if __name__ == '__main__':
         exact_matches_exp.append(exactMatch)
         del instantRegret, possibleReturnersAtTimeT, env
         gc.collect()
+
     mean = np.mean(rewards_per_exp, axis=0)
     std = np.std(rewards_per_exp, axis=0) / np.sqrt(n_experiment)
     plt.figure(0)
@@ -137,7 +134,7 @@ if __name__ == '__main__':
     plt.ylabel("regret")
     plt.plot(mean)
     plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-    plt.savefig('regret_step2.png')
+    plt.savefig('regret_step2_var5.png')
     plt.show()
 
     mean = np.mean(exact_matches_exp, axis=0)
@@ -146,8 +143,8 @@ if __name__ == '__main__':
     plt.xlabel("t")
     plt.ylabel("exact_matches")
     plt.plot(mean)
-    plt.fill_between(range(horizon), mean - std, mean + std, alpha=0.4)
-    plt.savefig('matches_step2.png')
+    plt.fill_between(range(horizon-delay), mean - std, mean + std, alpha=0.4)
+    plt.savefig('matches_step2_var5.png')
     plt.show()
 
 

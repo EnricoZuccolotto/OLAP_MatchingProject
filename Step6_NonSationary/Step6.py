@@ -40,14 +40,14 @@ if __name__ == '__main__':
     f.close()
 
     # define the experiment parameters
-    n_experiment = 5
+    n_experiment = 100
     horizon = 365
     delay = 30
     numberOfDailyVisit = 150
     # init the matcher
     matchingBestDiscountCode=matchingBestDiscountCode( prices, costs,100)
     # if window 0 use change detection otherwise use sliding learner
-    window=0
+    window=4*int(np.sqrt(horizon))
 
     regrets_per_exp = []
     rewards_per_exp = []

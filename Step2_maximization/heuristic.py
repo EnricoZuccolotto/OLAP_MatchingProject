@@ -84,7 +84,7 @@ class matchingBestDiscountCode():
         if user.probabilityFutureBehaviour[p] == 0:
             reward = 0
         else:
-            reward  = np.sum((activation_prob*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes*estimatedQuantities)) - self.prices[p]*user.probabilityFutureBehaviour[p]
+            reward  = np.sum((activation_prob*(self.prices-self.costs) * user.probabilityFutureBehaviour*visitableNodes*estimatedQuantities)) - (self.prices[p]*user.probabilityFutureBehaviour[p])
         if reward!=0:
             reward=reward * M[p]
         return reward
